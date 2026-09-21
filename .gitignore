@@ -1,0 +1,39 @@
+# Secrets — wallet keys live only in .env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+keystore/
+
+# Private strategy notes and raw evidence
+internal/
+
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.vercel/
+
+# Foundry
+packages/contracts/cache/
+packages/contracts/out/
+packages/contracts/broadcast/*/31337/
+packages/contracts/broadcast/**/dry-run/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
