@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
-import type { Debt, Quote, Receipt } from "@/lib/setoff";
+import Link from "next/link";
+import type { CycleState, Debt, Quote, Receipt } from "@/lib/setoff";
 import { addressUrl, blockUrl, txUrl } from "@/lib/chain";
 import { age, lastDigits, short, utc } from "@/lib/format";
 import { exactUsdc, formatAmount, formatRate, formatUsdc } from "@/lib/money";
@@ -7,6 +8,10 @@ import { ClearBand, StateMark } from "./Marks";
 import { PerforatorRun, PunchFields, type PunchRow } from "./Punch";
 
 const DOTS: Record<string, string[]> = {
+  C: ["01110", "10001", "10000", "10000", "10000", "10001", "01110"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
   P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
   A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
   I: ["01110", "00100", "00100", "00100", "00100", "00100", "01110"],
@@ -21,27 +26,34 @@ function perforationMask(word = "PAID", pitch = 6, r = 2.1) {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
+/** The cycle a debt clears in, and what the cycle priced it at once fixed. */
+export type SlipCycle = { id: number; state: CycleState; fixedAt: number | null; closedAt: number | null; usdc: bigint | null };
+
 /** A debt, as the card the recorder punches: priced in its own currency, stamped at the chain's time. */
-export function Slip({ debt, quote, receipt, now }: { debt: Debt; quote: Quote | null; receipt: Receipt | null; now: number }) {
+export function Slip({ debt, quote, receipt, now, cycle = null }: { debt: Debt; quote: Quote | null; receipt: Receipt | null; now: number; cycle?: SlipCycle | null }) {
   const ccy = debt.currency.toLowerCase();
   const paid = debt.state === "paid";
   const cancelled = debt.state === "cancelled";
-  const style = paid ? ({ "--holes": perforationMask() } as React.CSSProperties) : undefined;
+  const netted = debt.state === "netted";
+  const inCycle = cycle !== null;
+  const style = paid || netted ? ({ "--holes": perforationMask(netted ? "CLEARED" : "PAID") } as React.CSSProperties) : undefined;
 
   const rows: PunchRow[] = [
     { label: "Proposed", ts: debt.proposedAt, who: "signed by the creditor" },
     { label: "Endorsed", ts: debt.acceptedAt, who: "signed by the debtor" },
     cancelled
       ? { label: "Cancelled", ts: debt.closedAt, who: "withdrawn by the creditor", struck: true }
-      : { label: "Paid", ts: debt.closedAt, who: "by the debtor, at the fixing" },
+      : inCycle
+        ? { label: "Netted", ts: debt.closedAt, who: `in cycle ${cycle.id}, at its settlement` }
+        : { label: "Paid", ts: debt.closedAt, who: "by the debtor, at the fixing" },
   ];
 
   return (
     <div className="relative">
-      <article className={`stock ccy-${ccy} grid gap-5 px-5 pt-5 pb-0 sm:px-8 sm:pt-7 ${paid ? "perforated" : ""}`} style={style} aria-label={`Debt ${debt.id}, ${debt.state}`}>
+      <article className={`stock ccy-${ccy} grid gap-5 px-5 pt-5 pb-0 sm:px-8 sm:pt-7 ${paid || netted ? "perforated" : ""}`} style={style} aria-label={`Debt ${debt.id}, ${debt.state}`}>
         <header className="flex min-h-[42px] items-start justify-between gap-4">
           <span className="text-[13px]"><ClearBand id={debt.id} /></span>
-          {!paid && <StateMark state={debt.state} />}
+          {!paid && !netted && <StateMark state={debt.state} />}
         </header>
 
         <p className={`fig flex items-baseline gap-3 leading-[0.95] ${cancelled ? "text-graphite" : ""}`}>
@@ -62,29 +74,44 @@ export function Slip({ debt, quote, receipt, now }: { debt: Debt; quote: Quote |
               <span className="text-[12.5px] text-graphite">paid at the fixing · exactly <span className="fig">{exactUsdc(receipt.usdc)}</span></span>
             </>
           )}
-          {debt.state === "accepted" && quote?.ok && (
+          {inCycle && cycle.usdc !== null && (
+            <>
+              <span className="fig text-[24px] font-medium">{formatUsdc(cycle.usdc, 4)} <span className="text-[14px] text-graphite">USDC</span></span>
+              <span className="text-[12.5px] text-graphite">
+                at <Link href={`/cycles/${cycle.id}`} className="text-ink">cycle {cycle.id}</Link>&apos;s fixing · exactly <span className="fig">{exactUsdc(cycle.usdc)}</span>
+                {netted ? " · set off against the cycle, only the net moved" : " · it nets when every debtor in the cycle has funded"}
+              </span>
+            </>
+          )}
+          {inCycle && cycle.usdc === null && debt.state !== "cancelled" && (
+            <span className="text-[13px] text-graphite">
+              {debt.state === "proposed" ? "Joins " : "Clears in "}<Link href={`/cycles/${cycle.id}`} className="text-ink">cycle {cycle.id}</Link>
+              {debt.state === "proposed" ? " when its debtor endorses it, and is priced at the cycle's fixing." : quote?.ok ? <>, priced at its fixing. At today&apos;s fixing it would be <span className="fig text-ink">{formatUsdc(quote.due, 4)} USDC</span>.</> : ", priced at its fixing."}
+            </span>
+          )}
+          {!inCycle && debt.state === "accepted" && quote?.ok && (
             <>
               <span className="fig text-[24px] font-medium">≈ {formatUsdc(quote.due, 4)} <span className="text-[14px] text-graphite">USDC</span></span>
               <span className="text-[12.5px] text-graphite">at today&apos;s fixing, {age(now - quote.fixing.updatedAt)} old · priced exactly when paid</span>
             </>
           )}
-          {debt.state === "accepted" && quote && !quote.ok && (
+          {!inCycle && debt.state === "accepted" && quote && !quote.ok && (
             <>
               <span className="impress impress-late">Refused</span>
               <span className="text-[12.5px] text-graphite">The {debt.currency} fixing is stale, so the contract won&apos;t price this debt until the feed updates.</span>
             </>
           )}
-          {debt.state === "proposed" && <span className="text-[13px] text-graphite">Not priced yet. A debt is priced at the fixing on the day it&apos;s paid.</span>}
+          {!inCycle && debt.state === "proposed" && <span className="text-[13px] text-graphite">Not priced yet. A debt is priced at the fixing on the day it&apos;s paid.</span>}
           {cancelled && <span className="text-[13px] text-graphite">Cancelled by its creditor before it was endorsed. It was never owed.</span>}
         </div>
 
         <PunchFields rows={rows} />
 
         <footer className="flex min-h-[54px] items-center pb-1 text-[12px] text-graphite">
-          <ClearBand id={debt.id} usdcWei={receipt?.usdc ?? null} />
+          <ClearBand id={debt.id} usdcWei={receipt?.usdc ?? (netted ? cycle?.usdc ?? null : null)} />
         </footer>
       </article>
-      <PerforatorRun paid={paid} />
+      <PerforatorRun paid={paid || netted} word={netted ? "CLEARED" : "PAID"} />
     </div>
   );
 }

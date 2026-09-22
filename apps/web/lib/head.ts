@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { publicClient } from "./chain";
 
 /** The chain's latest block, polled once for the whole page however many clocks read it. */
@@ -37,4 +37,23 @@ function subscribe(listener: () => void) {
 
 export function useHead(): Head | null {
   return useSyncExternalStore(subscribe, () => head, () => null);
+}
+
+/**
+ * Chain time in whole seconds, ticking between polls from the last block seen. Starts from the
+ * time the page itself was read at, so the first render matches the server's.
+ */
+export function useChainNow(readAt: number): number {
+  const head = useHead();
+  const [now, setNow] = useState(readAt);
+  const latest = useRef(head);
+  useEffect(() => { latest.current = head; }, [head]);
+  useEffect(() => {
+    const t = setInterval(() => {
+      const h = latest.current;
+      setNow((prev) => (h ? Math.floor(h.timestamp + (performance.now() - h.seenAt) / 1000) : prev + 1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
 }

@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import NumberFlow from "@number-flow/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, LoaderCircle, Play, RotateCcw } from "lucide-react";
 import { SETOFF_ADDRESS, addressUrl } from "@/lib/chain";
 import { short } from "@/lib/format";
-import { ATTEMPTS, runAttempt, type Attempt, type Outcome, type RoomContext } from "@/lib/attempts";
+import { ATTEMPTS, CYCLE_ATTEMPTS, runAttempt, type Attempt, type Outcome, type RoomContext } from "@/lib/attempts";
 
-const GROUPS: Attempt["group"][] = ["The fixing", "Paying", "Authority", "Recording"];
+const GROUPS: Attempt["group"][] = ["The fixing", "Paying", "Authority", "Recording", "The cycle"];
 
 function Result({ o }: { o: Outcome }) {
   if (o.result === "refused" && o.error) {
@@ -22,7 +22,7 @@ function Result({ o }: { o: Outcome }) {
   return <span className="print text-[12px] text-ink">CLEARS</span>;
 }
 
-/** Twelve attempts against the live contract, each a read-only eth_call. The tape prints what the contract said. */
+/** Every attempt runs against the live contract as a read-only eth_call. The tape prints what the contract said. */
 export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: React.ReactNode; cannot: React.ReactNode }) {
   const [outcomes, setOutcomes] = useState<Record<string, Outcome>>({});
   const [log, setLog] = useState<Outcome[]>([]);
@@ -31,6 +31,8 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
   // A failure sticks to its own attempt: running the next one must never hide it.
   const [failures, setFailures] = useState<Record<string, string>>({});
   const reduce = useReducedMotion();
+  // Cycle attempts that need a settled cycle run only when the contract has one.
+  const all = useMemo(() => [...ATTEMPTS, ...CYCLE_ATTEMPTS.filter((a) => !a.needsCycle || ctx.settled)], [ctx]);
 
   const run = useCallback(async (a: Attempt) => {
     setRunning(a.key);
@@ -49,14 +51,14 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
   }, [ctx]);
 
   const runAll = useCallback(async () => {
-    for (const a of ATTEMPTS) { await run(a); }
-  }, [run]);
+    for (const a of all) { await run(a); }
+  }, [run, all]);
 
   const ran = Object.values(outcomes);
   const surprises = ran.filter((o) => !o.matched).length;
   const failed = Object.keys(failures).length;
   const current = selected ? outcomes[selected] : log[0];
-  const currentAttempt = current ? ATTEMPTS.find((a) => a.key === current.key) : null;
+  const currentAttempt = current ? all.find((a) => a.key === current.key) : null;
 
   return (
     <>
@@ -68,7 +70,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
             {running ? "Running…" : "Run every attempt"}
           </button>
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-graphite" aria-live="polite">
-            <span><NumberFlow value={ran.length} className="fig text-[20px] text-ink" /> of <span className="fig">{ATTEMPTS.length}</span> run</span>
+            <span><NumberFlow value={ran.length} className="fig text-[20px] text-ink" /> of <span className="fig">{all.length}</span> run</span>
             <span className={surprises ? "font-semibold text-ink" : ""}><NumberFlow value={surprises} className="fig text-[20px] text-ink" /> {surprises === 1 ? "surprise" : "surprises"}</span>
             {failed > 0 && <span className="font-semibold text-ink"><span className="fig text-[20px]">{failed}</span> couldn&apos;t run</span>}
           </p>
@@ -82,7 +84,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
           <section key={g} className="plate p-5 sm:p-6" aria-label={g}>
             <h2 className="legend mb-4">{g}</h2>
             <div className="well grid gap-2 p-2">
-              {ATTEMPTS.filter((a) => a.group === g).map((a) => {
+              {all.filter((a) => a.group === g).map((a) => {
                 const o = outcomes[a.key];
                 const on = current?.key === a.key;
                 return (
@@ -151,7 +153,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
             ) : (
               <ol className="grid max-h-[220px] gap-1 overflow-auto pt-2">
                 {log.map((o) => {
-                  const a = ATTEMPTS.find((x) => x.key === o.key);
+                  const a = all.find((x) => x.key === o.key);
                   return (
                     <li key={`${o.key}-${o.at}`} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 text-[11.5px]">
                       <span className="fig text-graphite">#{o.block}</span>

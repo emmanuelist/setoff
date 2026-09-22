@@ -7,7 +7,7 @@ import { SETOFF_ADDRESS, publicClient } from "@/lib/chain";
 import { setoffAbi } from "@/lib/setoff-abi";
 import { useWallet } from "./WalletProvider";
 
-type Writable = "propose" | "accept" | "cancel" | "pay" | "withdraw";
+type Writable = "propose" | "accept" | "cancel" | "pay" | "withdraw" | "openCycle" | "proposeInCycle" | "fixCycle" | "fund" | "settle" | "voidCycle";
 
 export type TxPhase =
   | { phase: "idle" }
@@ -31,6 +31,23 @@ const REASONS: Record<string, string> = {
   UnsupportedCurrency: "That currency isn't supported.",
   NothingToWithdraw: "There's nothing to withdraw for this account.",
   TransferFailed: "Your address can't receive USDC right now, so the withdrawal was refused. Your balance is still owed to you.",
+  AmountTooLarge: "That amount is beyond what a single debt can hold.",
+  InCycle: "This debt clears in its cycle, not on its own. Fund your net on the cycle's page.",
+  InvalidSchedule: "The cutoff must be in the future, and the funding window between 10 minutes and 30 days.",
+  UnknownCycle: "There's no cycle with that number.",
+  WrongCycleState: "This cycle has already moved on. Refresh to see where it is now.",
+  BeforeCutoff: "The cutoff hasn't arrived yet. The cycle can be fixed from the cutoff.",
+  PastCutoff: "Enrolment closed at the cutoff. This debt can't join the cycle now.",
+  BeforeDeadline: "The funding deadline hasn't passed. A cycle can only be voided after it.",
+  PastDeadline: "The funding deadline has passed. The cycle can now only be voided.",
+  CycleFull: "This cycle already holds 16 debts, its limit.",
+  TooManyParties: "This cycle already has 8 parties, its limit.",
+  EmptyCycle: "No debt has joined this cycle, so there's nothing to fix. It can be voided after its deadline.",
+  NotNetDebtor: "This account doesn't owe a net in this cycle, so there's nothing for it to fund.",
+  AlreadyFunded: "This account has already funded its net.",
+  Underfunded: "That's less than your net. Fund the full amount; any excess comes back to you.",
+  NotFullyFunded: "Not every net debtor has funded yet. The cycle settles only when all of them have.",
+  FullyFunded: "Every net debtor has funded, so this cycle settles; it can't be voided.",
 };
 
 function explain(error: unknown): string {

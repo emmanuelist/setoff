@@ -20,3 +20,19 @@ export function age(seconds: number): string {
 }
 
 export const lastDigits = (n: bigint, count = 6) => `…${n.toString().slice(-count)}`;
+
+/** "14:31:26 UTC": a time on the chain's clock, to the second. */
+export function clock(ts: number): string {
+  const d = new Date(ts * 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`;
+}
+
+/** "3 min 12 s" / "1 h 04 min" / "2 d 3 h": a span of time, never shown as zero. */
+export function span(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  if (s < 60) return `${Math.max(1, s)} s`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, "0")} s`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, "0")} min`;
+  return `${Math.floor(s / 86400)} d ${Math.floor((s % 86400) / 3600)} h`;
+}

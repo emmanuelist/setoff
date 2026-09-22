@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import { decodeEventLog, getAddress, isAddress, stringToHex, type Address } from "viem";
 import { SETOFF_ADDRESS } from "@/lib/chain";
-import { age, short } from "@/lib/format";
+import Link from "next/link";
+import { age, clock, short } from "@/lib/format";
+import { useChainNow } from "@/lib/head";
 import { CURRENCIES, encodeCurrency, formatAmount, formatUsdc, parseAmount, toUsdc, type Currency } from "@/lib/money";
 import { setoffAbi } from "@/lib/setoff-abi";
 import { Gauge } from "./Gauge";
@@ -16,9 +18,18 @@ import { useWallet } from "./wallet/WalletProvider";
 
 export type LiveFixing = { currency: string; answer: string; decimals: number; updatedAt: number } | { currency: string; refused: true; updatedAt: number | null };
 
+const clearsKey = "h-11 rounded-key border-0 bg-[linear-gradient(180deg,var(--enamel),var(--key))] px-3.5 text-[13px] font-semibold text-ink shadow-[inset_0_1px_0_#fff,0_0_0_1px_rgb(29_27_24/0.16),0_2px_0_var(--key-skirt)] hover:bg-[linear-gradient(180deg,var(--enamel),var(--key))] data-[state=on]:translate-y-[2px] data-[state=on]:bg-well data-[state=on]:shadow-[inset_0_2px_4px_rgb(29_27_24/0.2),0_0_0_1.5px_var(--ink)] disabled:opacity-45";
+
 const field = "well fig h-12 w-full px-3.5 text-[15px] outline-none placeholder:text-graphite focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink aria-invalid:shadow-[inset_0_0_0_2px_var(--ink)]";
 
-export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixing[]; now: number; maxAge: number; intro: ReactNode }) {
+export function ProposeForm({ fixings, now, maxAge, intro, cycles, initialCycle }: {
+  fixings: LiveFixing[];
+  now: number;
+  maxAge: number;
+  intro: ReactNode;
+  cycles: { id: string; cutoff: number }[];
+  initialCycle: string | null;
+}) {
   const { account } = useWallet();
   const tx = useSetoffTx();
   const router = useRouter();
@@ -27,6 +38,10 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
   const [amountText, setAmountText] = useState("");
   const [ref, setRef] = useState("");
   const [touched, setTouched] = useState(false);
+  const [clears, setClears] = useState<string>(initialCycle ?? "direct");
+  const chainNow = useChainNow(now);
+  const cycle = clears === "direct" ? null : cycles.find((c) => c.id === clears) ?? null;
+  const cycleClosed = cycle !== null && chainNow >= cycle.cutoff;
 
   const amount = parseAmount(amountText);
   const fixing = fixings.find((f) => f.currency === currency);
@@ -41,6 +56,7 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
     if (refBytes > 32 || /[^\x20-\x7e]/.test(ref)) p.ref = "Up to 32 plain characters.";
     return p;
   }, [debtor, account, amount, ref, refBytes]);
+  const blocked = cycleClosed;
   const valid = Object.keys(problems).length === 0;
 
   const live = fixing && !("refused" in fixing) ? fixing : null;
@@ -50,8 +66,9 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
   async function submit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setTouched(true);
-    if (!valid || amount === null) return;
-    const receipt = await tx.run("propose", [getAddress(debtor) as Address, encodeCurrency(currency), amount, stringToHex(ref, { size: 32 })]);
+    if (!valid || amount === null || blocked) return;
+    const args = [getAddress(debtor) as Address, encodeCurrency(currency), amount, stringToHex(ref, { size: 32 })] as const;
+    const receipt = cycle ? await tx.run("proposeInCycle", [BigInt(cycle.id), ...args]) : await tx.run("propose", args);
     if (!receipt) return;
     for (const log of receipt.logs) {
       if (log.address.toLowerCase() !== SETOFF_ADDRESS.toLowerCase()) continue;
@@ -106,6 +123,23 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
           {help("amount", "Priced in the currency you invoiced in. Nothing is converted until it's paid.")}
         </label>
 
+        <div className="grid gap-2" role="group" aria-labelledby="clears-label">
+          <span id="clears-label" className="legend text-ink">Where it clears</span>
+          <ToggleGroup type="single" value={clears} onValueChange={(v) => { if (v) setClears(v); }} spacing={6} className="flex w-full flex-wrap" aria-label="Where it clears">
+            <ToggleGroupItem value="direct" className={clearsKey}>Directly</ToggleGroupItem>
+            {cycles.map((c) => (
+              <ToggleGroupItem key={c.id} value={c.id} disabled={chainNow >= c.cutoff} className={clearsKey}>
+                Cycle {c.id} <span className="fig text-[11px] font-normal text-graphite">· cutoff {clock(c.cutoff)}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          <span className={`text-[12.5px] leading-[1.5] ${cycleClosed ? "font-semibold text-ink" : "text-graphite"}`}>
+            {cycleClosed ? `Cycle ${cycle?.id} has reached its cutoff; it takes no more debts. Choose another, or clear directly.`
+              : cycle ? `It joins cycle ${cycle.id} when the debtor endorses it, and clears there at the cutoff against everything else in the cycle.`
+              : <>Paid on its own, at the fixing on the day the debtor pays.{cycles.length === 0 && <> No cycle is open for debts right now; <Link href="/cycles/new">open one</Link>.</>}</>}
+          </span>
+        </div>
+
         <label className="grid gap-2">
           <span className="legend text-ink">Reference <span className="text-graphite normal-case tracking-normal [font-variation-settings:'wdth'_100]">optional</span></span>
           <input className={field} value={ref} onChange={(e) => setRef(e.target.value)} placeholder="INV-0002" maxLength={32} autoComplete="off" aria-invalid={!!show("ref")} aria-describedby="ref-help" />
@@ -113,7 +147,7 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
         </label>
 
         <div className="grid justify-items-start gap-3 border-t border-rule pt-6">
-          <button className="key key-sign" type="submit" disabled={tx.busy}>Propose this debt</button>
+          <button className="key key-sign" type="submit" disabled={tx.busy || blocked}>{cycle ? `Propose into cycle ${cycle.id}` : "Propose this debt"}</button>
           <p className="text-[12.5px] leading-[1.5] text-graphite">
             {account ? "You sign as the creditor. It counts for nothing until the debtor endorses it." : "Connect your wallet (top right) first; you sign as the creditor."}
           </p>
@@ -142,7 +176,7 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
             {fixing && "refused" in fixing ? (
               <><span className="print print-late">REFUSED</span> <span className="text-graphite">The {currency} fixing is stale right now, so this couldn&apos;t be paid until the feed updates.</span></>
             ) : preview !== null ? (
-              <><span className="fig text-[17px]">≈ {formatUsdc(preview, 4)} USDC</span> <span className="text-graphite">at today&apos;s fixing. The debtor pays at the fixing on the day they pay.</span></>
+              <><span className="fig text-[17px]">≈ {formatUsdc(preview, 4)} USDC</span> <span className="text-graphite">at today&apos;s fixing. {cycle ? `Priced exactly at cycle ${cycle.id}'s fixing, and set off there.` : "The debtor pays at the fixing on the day they pay."}</span></>
             ) : (
               <span className="text-graphite">Enter an amount to see it at today&apos;s fixing.</span>
             )}
@@ -151,7 +185,7 @@ export function ProposeForm({ fixings, now, maxAge, intro }: { fixings: LiveFixi
             <PunchFields rows={[
               { label: "Proposed", ts: null, who: "" },
               { label: "Endorsed", ts: null, who: "" },
-              { label: "Paid", ts: null, who: "" },
+              { label: cycle ? "Netted" : "Paid", ts: null, who: "" },
             ]} />
           </div>
         </div>

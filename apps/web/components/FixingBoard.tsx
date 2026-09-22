@@ -10,22 +10,23 @@ const exact = (d: string) => d as `${number}`;
 const hhmm = (ts: number) => utc(ts).split(" ").slice(3, 5).join(" ");
 
 /** One gauge per currency, all read in the same request against the contract's live refusal limit. */
-export function FixingBoard({ reads, now, maxAge }: { reads: FixingRead[]; now: number; maxAge: number }) {
+export function FixingBoard({ reads, now, maxAge, frozen = false }: { reads: FixingRead[]; now: number; maxAge: number; frozen?: boolean }) {
   return (
-    <div className="col-span-12 grid grid-cols-2 gap-[var(--seam)] sm:grid-cols-3 lg:grid-cols-5">
-      {reads.map((r) => <FixingDial key={r.currency} read={r} now={now} maxAge={maxAge} />)}
+    <div className="col-span-12 grid grid-cols-2 gap-[var(--seam)] sm:grid-cols-3 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
+      {reads.map((r) => <FixingDial key={r.currency} read={r} now={now} maxAge={maxAge} frozen={frozen} />)}
     </div>
   );
 }
 
-function FixingDial({ read: r, now, maxAge }: { read: FixingRead; now: number; maxAge: number }) {
+/** `frozen`: a cycle's fixing, read once; `now` is then the moment it was fixed. */
+function FixingDial({ read: r, now, maxAge, frozen }: { read: FixingRead; now: number; maxAge: number; frozen: boolean }) {
   const ccy = `ccy-${r.currency.toLowerCase()}`;
   const usd = r.ok && r.currency === "USD";
   const ageSec = r.ok ? (usd ? null : now - r.fixing.updatedAt) : r.updatedAt ? now - r.updatedAt : null;
   const refused = !r.ok;
 
   const detail = r.ok
-    ? usd ? "USDC settles USD at par" : `USD per ${r.currency} · ${hhmm(r.fixing.updatedAt)}`
+    ? usd ? "USDC settles USD at par" : frozen ? `USD per ${r.currency} · as fixed` : `USD per ${r.currency} · ${hhmm(r.fixing.updatedAt)}`
     : r.reason === "stale" && r.updatedAt ? `Last updated ${age(now - r.updatedAt)} ago` : "The feed's answer is invalid";
 
   return (
@@ -38,7 +39,11 @@ function FixingDial({ read: r, now, maxAge }: { read: FixingRead; now: number; m
         ) : usd ? (
           <span className="legend">Par</span>
         ) : (
-          <span className="fig text-[12px] text-ink">{age(ageSec ?? 0)}</span>
+          <span className="text-[12px] whitespace-nowrap">
+            <span className="fig text-ink">{age(ageSec ?? 0)}</span>
+            {/* Words are never set in the figure face; on a phone the detail line says "as fixed". */}
+            {frozen && <span className="hidden text-[11.5px] text-graphite sm:inline"> at the fixing</span>}
+          </span>
         )}
       </div>
 

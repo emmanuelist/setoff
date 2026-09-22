@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { RefusalRoom } from "@/components/RefusalRoom";
 import { publicClient } from "@/lib/chain";
 import { pad } from "@/lib/format";
-import { readDebts, readMaxFixingAge, readQuote } from "@/lib/setoff";
+import { readCycle, readCycles, readDebts, readMaxFixingAge, readQuote } from "@/lib/setoff";
 
 export const metadata: Metadata = { title: "Refusal room" };
 
@@ -15,14 +15,18 @@ const CANNOT = [
   "Let anyone but the debtor endorse or pay a debt.",
   "Take a debt back once the debtor has endorsed it.",
   "Pay out more than it was paid, or push money to anyone.",
+  "Settle part of a cycle. Every net debtor funds, or every deposit comes back.",
   "Change its own rules. There is no owner and no admin key.",
 ];
 
 export default async function Refusals() {
   await connection();
-  const [debts, maxAge, head] = await Promise.all([readDebts(), readMaxFixingAge(), publicClient.getBlock()]);
+  const [debts, maxAge, head, cycles] = await Promise.all([readDebts(), readMaxFixingAge(), publicClient.getBlock(), readCycles()]);
   const paid = debts.find((d) => d.state === "paid");
-  const open = debts.find((d) => d.state === "accepted" && d.currency !== "USD");
+  const open = debts.find((d) => d.state === "accepted" && d.cycleId === 0 && d.currency !== "USD");
+  const settledCycle = cycles.find((c) => c.state === "settled");
+  const settledView = settledCycle ? await readCycle(settledCycle.id) : null;
+  const netted = settledView?.debts.find((d) => d.state === "netted");
   const quote = open ? await readQuote(open.id) : null;
 
   const intro = (
@@ -31,7 +35,7 @@ export default async function Refusals() {
       <p className="max-w-[58ch] text-[15.5px] leading-[1.55] text-graphite">
         Every attempt below runs against the live Setoff contract on Arc mainnet as a read-only call. Nothing is signed and nothing is spent.
         The contract answers with the exact reason it refuses, decoded from its own revert data.
-        {paid && open && <> The attempts use two real debts: <Link href={`/debts/${paid.id}`} className="text-ink">debt <span className="fig">{pad(paid.id, 4)}</span></Link>, already paid, and <Link href={`/debts/${open.id}`} className="text-ink">debt <span className="fig">{pad(open.id, 4)}</span></Link>, endorsed and unpaid.</>}
+        {paid && open && <> They use real records on the contract: <Link href={`/debts/${paid.id}`} className="text-ink">debt <span className="fig">{pad(paid.id, 4)}</span></Link>, already paid; <Link href={`/debts/${open.id}`} className="text-ink">debt <span className="fig">{pad(open.id, 4)}</span></Link>, endorsed and unpaid{settledCycle && netted ? <>; and <Link href={`/cycles/${settledCycle.id}`} className="text-ink">cycle <span className="fig">{pad(settledCycle.id, 4)}</span></Link>, settled, with <Link href={`/debts/${netted.id}`} className="text-ink">debt <span className="fig">{pad(netted.id, 4)}</span></Link>, which it netted</> : null}.</>}
       </p>
     </div>
   );
@@ -59,6 +63,7 @@ export default async function Refusals() {
             ctx={{
               paid: { id: paid.id.toString(), debtor: paid.debtor, creditor: paid.creditor },
               open: { id: open.id.toString(), debtor: open.debtor, creditor: open.creditor, currency: open.currency, due: quote.due.toString() },
+              settled: settledCycle && netted ? { id: settledCycle.id.toString(), netted: { id: netted.id.toString(), debtor: netted.debtor } } : null,
               now: Number(head.timestamp),
               maxAge,
             }}

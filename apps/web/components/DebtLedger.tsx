@@ -13,7 +13,7 @@ const COLS = "md:grid-cols-[96px_minmax(0,1fr)_118px_104px_96px_128px]";
 const when = (ts: number) => { const [d, m, , t, z] = utc(ts).split(" "); return `${d} ${m} ${t} ${z}`; };
 
 /** The rack: every debt on the contract as a card standing in its slot, newest first. */
-export function DebtLedger({ debts, priced, next }: { debts: Debt[]; priced: Map<bigint, Priced>; next: bigint }) {
+export function DebtLedger({ debts, priced, next }: { debts: Debt[]; priced: Map<bigint, Priced>; next: bigint | null }) {
   if (debts.length === 0) {
     return (
       <div className="well grid justify-items-start gap-4 p-6">
@@ -55,8 +55,8 @@ export function DebtLedger({ debts, priced, next }: { debts: Debt[]; priced: Map
                 <span className={`fig text-[22px] leading-none font-medium md:text-[16px] ${d.state === "cancelled" ? "struck text-graphite" : ""}`}>{formatAmount(d.amount, d.currency)}</span>
               </span>
               <span role="cell" className="fig col-start-2 row-start-3 text-right text-[13px] md:col-start-auto md:row-start-auto">
-                {p?.kind === "paid" && <span>{formatUsdc(p.usdc)}</span>}
-                {p?.kind === "quote" && <span className="text-graphite" title="Quote at the current fixing; priced exactly when paid">≈ {formatUsdc(p.usdc)}</span>}
+                {p?.kind === "paid" && <span>{formatUsdc(p.usdc)}<span className="text-[11px] text-graphite md:hidden"> USDC</span></span>}
+                {p?.kind === "quote" && <span className="text-graphite" title="Quote at the current fixing; priced exactly when paid">≈ {formatUsdc(p.usdc)}<span className="text-[11px] md:hidden"> USDC</span></span>}
                 {p?.kind === "refused" && <span className="impress impress-late impress-sm">Refused</span>}
                 {!p && <span className="text-graphite">—</span>}
               </span>
@@ -65,10 +65,10 @@ export function DebtLedger({ debts, priced, next }: { debts: Debt[]; priced: Map
             </Link>
           );
         })}
-        <Link href="/debts/new" className="flex min-h-[58px] flex-wrap items-center justify-between gap-x-4 gap-y-1.5 rounded-card py-3 border border-dashed border-ink/25 px-4 text-[13px] text-graphite no-underline transition-colors hover:border-ink/50 hover:text-ink">
+        {next !== null && <Link href="/debts/new" className="flex min-h-[58px] flex-wrap items-center justify-between gap-x-4 gap-y-1.5 rounded-card py-3 border border-dashed border-ink/25 px-4 text-[13px] text-graphite no-underline transition-colors hover:border-ink/50 hover:text-ink">
           <span>The next slot: debt <span className="fig text-ink">{pad(next, 4)}</span>, numbered when its creditor signs.</span>
           <span className="inline-flex items-center gap-1.5 font-semibold whitespace-nowrap text-ink">Record it <ArrowRight className="size-3.5" aria-hidden="true" /></span>
-        </Link>
+        </Link>}
       </div>
     </div>
   );

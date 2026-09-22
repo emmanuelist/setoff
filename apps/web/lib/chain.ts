@@ -1,10 +1,13 @@
 import { createPublicClient, http, type Address, type Hash } from "viem";
 import { arc } from "viem/chains";
 
-/** Setoff milestone 1 on Arc mainnet. Sourcify exact match; see docs/EVIDENCE.md. */
-export const SETOFF_ADDRESS: Address = "0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7";
-export const DEPLOY_BLOCK = 22_094_796n;
-export const DEPLOY_TIMESTAMP = 1_790_038_080;
+/** Setoff milestone 2 (both paths, plus netting cycles) on Arc mainnet. Sourcify exact match; see docs/EVIDENCE.md (D019). */
+export const SETOFF_ADDRESS: Address = "0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6";
+export const DEPLOY_BLOCK = 22_187_522n;
+export const DEPLOY_TIMESTAMP = 1_790_085_128;
+
+/** Milestone 1's contract, kept as its record: debt #1 was first paid there. */
+export const SETOFF_V1_ADDRESS: Address = "0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7";
 
 export const EXPLORER = "https://explorer.arc.io";
 export const SOURCIFY = `https://sourcify.dev/server/v2/contract/5042/${SETOFF_ADDRESS}`;

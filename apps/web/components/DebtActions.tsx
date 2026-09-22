@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAddress, type Address } from "viem";
 import { SETOFF_ADDRESS, publicClient } from "@/lib/chain";
@@ -9,7 +10,7 @@ import { TxStatus } from "./TxStatus";
 import { useSetoffTx } from "./wallet/useSetoffTx";
 import { useWallet } from "./wallet/WalletProvider";
 
-export type DebtView = { id: string; creditor: Address; debtor: Address; currency: string; state: "proposed" | "accepted" | "paid" | "cancelled"; quoteDue: string | null };
+export type DebtView = { id: string; creditor: Address; debtor: Address; currency: string; state: "proposed" | "accepted" | "paid" | "cancelled" | "netted"; quoteDue: string | null; cycleId: number };
 
 export function DebtActions({ debt }: { debt: DebtView }) {
   const { account } = useWallet();
@@ -43,10 +44,27 @@ export function DebtActions({ debt }: { debt: DebtView }) {
   }
 
   let body: React.ReactNode;
-  if (!me) {
+  if (debt.state === "netted") {
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Netted in <Link href={`/cycles/${debt.cycleId}`} className="fig text-ink">cycle {debt.cycleId}</Link>. Only the net moved; payouts are withdrawn from the wallet menu. Nothing is left to do here.</p>;
+  } else if (debt.state === "cancelled") {
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Cancelled by its creditor before it was endorsed. Nothing is owed.</p>;
+  } else if (!me && debt.state === "paid") {
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Paid at the fixing. The creditor withdraws the payout from the wallet menu.</p>;
+  } else if (!me && debt.cycleId !== 0 && debt.state === "accepted") {
+    body = <p className="text-[14px] leading-[1.55] text-graphite">This debt clears in <Link href={`/cycles/${debt.cycleId}`} className="fig text-ink">cycle {debt.cycleId}</Link>, not on its own. Net debtors fund their net there.</p>;
+  } else if (!me) {
     body = <p className="text-[14px] leading-[1.55] text-graphite">Connect the debtor&apos;s wallet to endorse or pay this debt, or the creditor&apos;s to cancel or withdraw.</p>;
   } else if (!role) {
     body = <p className="text-[14px] leading-[1.55] text-graphite">This wallet isn&apos;t a party to this debt. Only its debtor can endorse or pay it; only its creditor can cancel it.</p>;
+  } else if (debt.cycleId !== 0 && debt.state === "proposed" && role === "debtor") {
+    body = (
+      <>
+        <p className="text-[14px] leading-[1.55]">You&apos;re the debtor. Endorsing joins this debt to <Link href={`/cycles/${debt.cycleId}`} className="fig">cycle {debt.cycleId}</Link>: it clears there at the cutoff, against everything else in the cycle, and you pay only your net.</p>
+        <button className="key key-sign w-full sm:w-auto" onClick={() => act("Endorsed", "accept", [id])} disabled={tx.busy}>Endorse into cycle {debt.cycleId}</button>
+      </>
+    );
+  } else if (debt.cycleId !== 0 && debt.state === "accepted") {
+    body = <p className="text-[14px] leading-[1.55] text-graphite">This debt clears in <Link href={`/cycles/${debt.cycleId}`} className="fig text-ink">cycle {debt.cycleId}</Link>, not on its own. Net debtors fund their net there; if anyone doesn&apos;t, the cycle is voided and this debt comes back here to be paid directly.</p>;
   } else if (debt.state === "proposed" && role === "debtor") {
     body = (
       <>

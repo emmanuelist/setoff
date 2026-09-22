@@ -14,7 +14,7 @@ export function Masthead() {
           <Wordmark />Setoff
         </Link>
         <div className="order-last w-full sm:order-none sm:w-auto"><Nav /></div>
-        <a href={SOURCIFY} target="_blank" rel="noreferrer" className="hidden items-center gap-1 text-[13px] text-graphite no-underline hover:text-ink lg:inline-flex">
+        <a href={SOURCIFY} target="_blank" rel="noreferrer" className="hidden items-center gap-1 text-[13px] text-graphite no-underline hover:text-ink xl:inline-flex">
           Verified contract <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
         <div className="ml-auto flex items-center gap-4">

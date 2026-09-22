@@ -60,6 +60,8 @@ export function StateMark({ state, size = "md" }: { state: DebtState; size?: "sm
   const sm = size === "sm";
   if (state === "accepted") return <span className={`impress impress-sign ${sm ? "impress-sm" : ""}`}>Endorsed</span>;
   if (state === "paid") return <span className="text-ink"><Perforation word="PAID" height={sm ? 15 : 24} title="paid" /></span>;
+  // Netted in a cycle: cleared against the others, like a cheque in the clearing.
+  if (state === "netted") return <span className="text-ink"><Perforation word="CLEARED" height={sm ? 15 : 24} title="netted" /></span>;
   const quiet = `legend ${sm ? "text-[9.5px]" : ""}`;
   if (state === "cancelled") return <span className={`${quiet} struck`}>Cancelled</span>;
   return <span className={quiet}>Proposed</span>;

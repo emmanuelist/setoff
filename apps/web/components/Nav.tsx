@@ -6,15 +6,16 @@ import { motion } from "motion/react";
 
 const ITEMS = [
   { href: "/", label: "Debts", match: (p: string) => p === "/" || (p.startsWith("/debts/") && p !== "/debts/new") },
+  { href: "/cycles", label: "Cycles", match: (p: string) => p.startsWith("/cycles") },
   { href: "/debts/new", label: "Record a debt", short: "Record", match: (p: string) => p === "/debts/new" },
   { href: "/refusals", label: "Refusal room", short: "Refusals", match: (p: string) => p === "/refusals" },
 ];
 
-/** A three-way selector switch: the active position is a raised cap that slides between detents. */
+/** A four-way selector switch: the active position is a raised cap that slides between detents. */
 export function Nav() {
   const path = usePathname();
   return (
-    <nav aria-label="Primary" className="well grid grid-cols-3 p-1 sm:inline-grid">
+    <nav aria-label="Primary" className="well grid grid-cols-4 p-1 sm:inline-grid">
       {ITEMS.map((it) => {
         const on = it.match(path);
         return (
@@ -22,7 +23,7 @@ export function Nav() {
             key={it.href}
             href={it.href}
             aria-current={on ? "page" : undefined}
-            className={`relative flex h-9 items-center justify-center rounded-[7px] px-3 text-[13px] font-semibold no-underline transition-colors duration-150 sm:px-4 ${on ? "text-ink" : "text-graphite hover:text-ink"}`}
+            className={`relative flex h-9 items-center justify-center rounded-[7px] px-2 text-[13px] font-semibold no-underline transition-colors duration-150 sm:px-4 ${on ? "text-ink" : "text-graphite hover:text-ink"}`}
           >
             {on && (
               <motion.span
