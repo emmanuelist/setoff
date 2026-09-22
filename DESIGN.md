@@ -229,21 +229,45 @@ Each currency has a pale tint (the stock) and a deep code colour (the printed cu
 
 **Character:** Archivo's width axis does the work of two faces: slightly wide and bold for headings, fully wide caps for engraved legends. Martian Mono, condensed, sets every amount, rate, ID, address, block and time in tabular figures, so numbers read as instrument output. Both load through next/font.
 
+### The scale
+
+Nine steps, defined once in `@theme` and used as utilities (`text-body`, `text-figure-m`). Nothing
+sets a font size by hand, and each step carries its own line-height. The floor for functional
+text is 11px, and it is reached only by the legend, which is uppercase and tracked.
+
+| Token | Size | Line | Used for |
+| --- | --- | --- | --- |
+| `--text-label` | 11px | 1.25 | legends, impressions, the smallest instrument marks |
+| `--text-caption` | 12px | 1.45 | secondary figures, timestamps, table asides |
+| `--text-small` | 13px | 1.5 | plate prose, ledger rows, the footer |
+| `--text-body` | 14px | 1.55 | base text, step bodies, act copy |
+| `--text-lead` | 16px | 1.55 | the home paragraph and other lead prose |
+| `--text-heading` | 17px | 1.3 | a plate's own sub-heading |
+| `--text-figure-m` | 20px | 1.2 | a standing figure: the contract tally, withdrawable |
+| `--text-figure-l` | 24px | 1.15 | a plate's headline figure |
+| `--text-title` | 28px | 1.05 | a plate's own heading, such as "Try to break it." |
+| `--text-display` | clamp(36, 4.4vw, 62) | 1.0 | the home claim and page headings |
+| `--text-figure-xl` | clamp(40, 4.8vw, 60) | 0.95 | the compact cycle statement's figure |
+| `--text-figure-hero` | clamp(46, 6.4vw, 88) | 0.95 | the full cycle statement's figure, and a debt card's face value |
+
 ### Hierarchy
-- **Display** (700, clamp(38px, 5.2vw, 68px), line-height 1.0, width 108): the home claim. The refusal room's heading runs larger (clamp(44px, 6vw, 84px), width 104, line-height 0.95).
-- **Headline** (700, clamp(32px, 3.8vw, 50px), width 108): the record page heading.
-- **Title** (700, 28px, width 108): a plate's own heading, such as "Try to break it." on home.
-- **Body** (400, 15px, line-height 1.45): base text. Lead paragraphs run 15.5 to 16px at 1.55 in graphite, capped near 56 to 58ch. Plate prose runs 13 to 14px.
-- **Legend** (700, 10.5px, 0.18em tracking, width 125, uppercase, graphite, with a 1px white engraving shadow): the name of an instrument, cut into its plate. It is the plate's heading, not a line above one.
-- **Figure** (Martian Mono, tabular, width 87.5): every measured value, 12 to 30px.
-- **Amount** (Martian Mono 500, clamp(46px, 6.6vw, 88px), width 80): the face value on a debt card, beside its currency code set as a wide 750-weight code.
+- **Display** (Archivo 700, `text-display`, width 108): the home claim. The refusal room's heading runs larger (clamp(44px, 6vw, 84px), width 104, line-height 0.95).
+- **Title** (700, `text-title`, width 108): a plate's own heading.
+- **Body** (400, `text-body`): base text. Lead paragraphs run `text-lead` in graphite, capped near 52 to 62ch; plate prose runs `text-small` to `text-body`.
+- **Legend** (700, `text-label`, 0.18em tracking, width 125, uppercase, graphite, with a 1px white engraving shadow): the name of an instrument, cut into its plate. It is the plate's heading, not a line above one. A legend is a label, never a sentence: it stays under about twenty characters, because uppercase at this size stops being readable as prose.
+- **Figure** (Martian Mono, tabular, width 87.5): every measured value, from `text-caption` to `text-figure-hero`.
+- **Amount** (Martian Mono 500, `text-figure-hero`, width 80): the face value on a debt card, beside its currency code set as a wide 750-weight code.
 - **Print** (Martian Mono 600, 0.04em tracking): ribbon print on a card; timestamps are uppercase UTC.
-- **Impression** (Archivo 800, 11px, 0.16em tracking, width 125, uppercase, 1.5px border in currentColor, 2px radius): a stamped state mark, "Endorsed" or "Refused". The small size is 9.5px.
+- **Impression** (Archivo 800, `text-label`, 0.16em tracking, width 125, uppercase, 1.5px border in currentColor, 2px radius): a stamped state mark, "Endorsed" or "Refused". The small size is 9.5px.
 
 ### Named Rules
 **The Figure Rule.** Every value that came from the chain is set in the figure face with tabular numerals. Words are never set in it, except ribbon print and revert names.
 
 **The Engraved Legend Rule.** A legend names the instrument it sits on. It is never a kicker or eyebrow above a heading.
+
+**The Scale Rule.** No component sets a font size. Every size is one of the twelve steps above, so a
+size change is a token change. `cn` is built with `createCn` and told about these steps, or it would
+read `text-body` as a colour and silently drop it.
 
 ## Layout
 
@@ -294,14 +318,38 @@ The claim, drawn from a real cycle: gross owed in several currencies, set off at
 - **Headline figure:** Martian Mono at up to 96px (60px compact). NumberFlow rolls it from the gross to the net over 1.4 s once the statement is 40 % in view. Its unit sits on the figure's baseline, in graphite, and says what the figure is at each moment: "USDC owed, gross, in N currencies", then "USDC moves". No legend is stacked above it. Beside it, in one line: owed · moves · % set off, and whether it is priced at the cycle's fixing or previewed at today's.
 - **Set-off beams:** one row per party in a well, on a zero line.
   - Debits grow left of the zero line and credits right, each drawn as segments of currency stock.
-  - At set-off the gross ghosts back to 50 % and the net grows out from zero as an ink bar.
+  - At set-off the currency stock retracts toward the zero line, keeping its own segment widths, until only the surviving net is left; a hatched ghost (`.hatch`) holds the span it vacated. The net grows out from zero as an ink bar over the surviving stock. The cancellation is a thing you can see, not a figure you are told.
+  - Rows cascade 0.12 s apart, top to bottom, and each party's net figure brightens as its own beam lands. The whole set-off reads as one movement rather than four.
   - The ink bar is the money that stops being pesos or yen and becomes the USDC that moves.
   - Direction is carried by side, sign and the word credit, debit or flat, never by colour. A net debtor shows funded or unfunded once the cycle is fixed.
-- **Currency strip** (page version): a stock chip per currency, with the total amount and its USDC at the fixing. The compact version carries a one-line key instead (each currency's swatch and code, and the ink bar as "net, in USDC"), so beam colour is never the only carrier of currency.
+- **Key:** a one-line key under the beams on both versions — each currency's swatch and code, the hatch as "set off", the ink bar as "net, in USDC" — so neither beam colour nor hatch is ever the only carrier of meaning. The page version adds a stock chip per currency with the total amount and its USDC at the fixing.
 - **Replay:** a plain key reruns the set-off. With reduced motion, the net shows at once and there is no replay.
 - **Accessibility:** a visually hidden sentence and table carry every figure: each party's legs by currency with their USDC, totals, net, and funding once fixed. The hidden wrapper is a div, because a table ignores the 1 px box and would overflow a phone.
 - **Where it appears:** the cycle page, and the home page's "Latest cycle" plate (compact).
 - **Its fixing** (cycle page): the home page's fixing board in a frozen mode, a full-size dial per currency in the cycle. The needle is held at the rate's age at the fixing, the header reads "20.0 h at fix", and the detail reads "as fixed". The on-chain trail (opened, fixed, each funding, settled or voided) sits in the right column as a vertical record, each row linked to its transaction.
+
+### Contract tally
+Four figures on the home plate, under the claim and above the keys, read live: debts settled, gross
+owed, USDC moved, and the percentage set off across everything the contract has ever done. It is the
+claim at contract scale, and it is why the hero plate is not mostly air. Labels are legends, figures
+are `text-figure-m`; the four align on one baseline through a row subgrid, so a label that wraps at
+one breakpoint never pushes its figure out of line.
+
+### Your position
+A plate that answers "what does this mean for me", for the connected wallet only: what it owes and is
+owed across every debt, and its net in every running cycle, with whether it still has to fund. It is
+the only plate whose content depends on who is looking. Disconnected, it says what it would show and
+offers the keys to connect; there is nothing to see and it does not pretend otherwise.
+
+### Connect keys
+The act, offered where the act is. Any plate that needs a wallet carries its own connect keys with a
+sentence naming what connecting would let you do here, rather than sending you to the masthead. With
+no browser wallet, it says so and names two. Copy is capped at 62ch.
+
+### Party marker
+An address rendered as its short form, with "you" appended when it is the connected wallet's. It runs
+through the ledger, the slips, the statement's party column and the on-chain trail, so the same
+address is recognisable wherever it appears, and your own is never something you have to match by eye.
 
 ### Cycle timer
 The cycle's schedule on the chain's clock.
@@ -346,7 +394,7 @@ A four-position selector switch in a well: Debts, Cycles, Record a debt, Refusal
 One shared well line for every write: checking, signing, including (spinner, graphite), done (violet print of the act, block, hash), failed (red "REFUSED" for a revert, graphite "NOT SENT" otherwise). A flow never stays in flight.
 
 ### Motion
-Springs settle without overshoot (`--spring`); presses use `--settle`. Motion carries meaning only: needles sweep to their age, the statement sets off, the timer's shuttle follows chain time, punch fields print, the perforator punches, the nav cap slides, figures roll. `prefers-reduced-motion` zeroes CSS transitions, and every Motion component checks it. `--out-expo` is defined but unused.
+Springs settle without overshoot (`--spring`); presses use `--settle`. Motion carries meaning only: needles sweep to their age, the statement sets off in a cascade, the timer's shuttle follows chain time, punch fields print, the perforator punches, the nav cap slides, figures roll. `prefers-reduced-motion` zeroes CSS transitions, and every Motion component checks it. `--out-expo` is defined but unused.
 
 ## Do's and Don'ts
 
@@ -378,6 +426,8 @@ Every custom property the stylesheet defines, for the design checker.
 - Stock: `--tint-usd`, `--code-usd`, `--tint-eur`, `--code-eur`, `--tint-mxn`, `--code-mxn`, `--tint-brl`, `--code-brl`, `--tint-jpy`, `--code-jpy`.
 - Geometry: `--r-plate`, `--r-key`, `--r-well`, `--r-card`, `--seam`, `--gutter`, `--measure`.
 - Type: `--display`, `--figure`.
+- Type scale: `--text-label`, `--text-caption`, `--text-small`, `--text-body`, `--text-lead`, `--text-heading`, `--text-figure-m`, `--text-figure-l`, `--text-title`, `--text-display`, `--text-figure-xl`, `--text-figure-hero`.
+- Type scale line-heights: `--text-label--line-height`, `--text-caption--line-height`, `--text-small--line-height`, `--text-body--line-height`, `--text-lead--line-height`, `--text-heading--line-height`, `--text-figure-m--line-height`, `--text-figure-l--line-height`, `--text-title--line-height`, `--text-display--line-height`, `--text-figure-xl--line-height`, `--text-figure-hero--line-height`.
 - Motion: `--spring`, `--settle`, `--out-expo`.
 - Radix slots, mapped onto the room: `--background` (wall), `--foreground` (ink), `--popover` (plate), `--popover-foreground` (ink), `--muted` (well), `--muted-foreground` (graphite), `--border` (rule), `--input` (rule), `--ring` (ink), `--destructive` (returned), `--radius` (key).
 - Tailwind theme aliases (same values, exposed as utilities): `--color-wall`, `--color-plate`, `--color-well`, `--color-enamel`, `--color-steel`, `--color-ink`, `--color-graphite`, `--color-faint`, `--color-rule`, `--color-on-ink`, `--color-endorse`, `--color-returned`, `--color-white`, `--color-background`, `--color-foreground`, `--color-popover`, `--color-popover-foreground`, `--color-muted`, `--color-muted-foreground`, `--color-border`, `--color-input`, `--color-ring`, `--color-destructive`, `--font-sans`, `--font-display`, `--font-figure`, `--radius-plate`, `--radius-key`, `--radius-well`, `--radius-card`, `--ease-spring`, `--ease-settle`, `--ease-out-expo`.
