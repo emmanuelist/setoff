@@ -89,8 +89,16 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 3 — built, and waiting at its gate. Phase 4 (a real voided cycle)
-follows.
+**Current phase:** 3 — built and committed, with the impeccable design passes run over the
+app on 2026-09-22 (typeset, clarify, layout, harden, adapt, audit, animate, polish). The
+audit scored 17/20; its snapshot and the dismissed detector findings are in `.impeccable/`.
+Rendered and inspected at 1440 and 390 on the home, cycle and debt pages. Phase 4 (a real
+voided cycle on mainnet) follows.
+
+**Measured on 2026-09-22:** Arc's public RPC answers in about 1.4s per round trip, so a
+page costs one round trip per *wave* of reads, not per call — multicall batching is already
+on. Home was 3.44s TTFB after batching its reads and cutting `readCycle` from five waves to
+three; it was 6.30s before. Any new surface should start every read it can in one wave.
 
 ## Open issues
 
