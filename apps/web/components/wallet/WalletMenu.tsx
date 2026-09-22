@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, ChevronDown, Wallet } from "lucide-react";
 import { SETOFF_ADDRESS, addressUrl, publicClient } from "@/lib/chain";
 import { short } from "@/lib/format";
 import { formatUsdc } from "@/lib/money";
 import { setoffAbi } from "@/lib/setoff-abi";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { TxStatus } from "../TxStatus";
 import { useSetoffTx } from "./useSetoffTx";
 import { useWallet } from "./WalletProvider";
-import s from "./WalletMenu.module.css";
 
 export function WalletMenu() {
   const { wallets, account, onArc, connecting, error, connect, disconnect, ensureArc } = useWallet();
@@ -17,7 +18,6 @@ export function WalletMenu() {
   // Keyed to the account it was read for, so a reading for another account can never show.
   const [reading, setReading] = useState<{ who: string; value: bigint } | null>(null);
   const owed = account && reading?.who === account ? reading.value : null;
-  const root = useRef<HTMLDivElement>(null);
 
   // What the contract owes this account, read live, and again after any write.
   useEffect(() => {
@@ -29,77 +29,70 @@ export function WalletMenu() {
     return () => { live = false; };
   }, [account, tx.state.phase]);
 
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: PointerEvent) => { if (root.current && !root.current.contains(e.target as Node)) setOpen(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", esc); };
-  }, [open]);
-
   return (
-    <div className={s.root} ref={root}>
-      <button className={s.chip} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="dialog">
-        {account ? (
-          <>
-            {!onArc && <span className={s.warn}>Wrong network</span>}
-            <span className="fig">{short(account)}</span>
-            {owed != null && owed > 0n && <span className={s.owed}><span className="fig">{formatUsdc(owed, 2)}</span> to withdraw</span>}
-          </>
-        ) : (
-          <span>{connecting ? "Connecting…" : "Connect wallet"}</span>
-        )}
-      </button>
-
-      {open && (
-        <div className={s.panel} role="dialog" aria-label="Wallet">
-          {!account ? (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className="key key-sm h-10 gap-2" aria-haspopup="dialog">
+          <Wallet aria-hidden="true" />
+          {account ? (
             <>
-              <p className={s.title}>Connect a wallet on Arc</p>
-              {wallets.length === 0 ? (
-                <p className={s.note}>No browser wallet found. Install one such as Rabby or MetaMask, then reload.</p>
-              ) : (
-                <ul className={s.list}>
-                  {wallets.map((w) => (
-                    <li key={w.info.uuid}>
-                      <button className={s.wallet} onClick={() => connect(w).then(() => setOpen(false))} disabled={connecting}>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- the wallet supplies its own data-URI icon */}
-                        <img src={w.info.icon} alt="" width={22} height={22} />
-                        <span>{w.info.name}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {error && <p className={s.err} role="alert">{error}</p>}
+              {!onArc && <span className="legend text-ink">Wrong network</span>}
+              <span className="fig text-[12.5px]">{short(account)}</span>
+              {owed != null && owed > 0n && <span className="border-l border-rule pl-2 text-[12px] text-graphite"><span className="fig text-ink">{formatUsdc(owed, 2)}</span> to withdraw</span>}
             </>
           ) : (
-            <>
-              <p className={s.title}>
-                <a href={addressUrl(account)} target="_blank" rel="noreferrer" className="fig">{short(account)} ↗</a>
-              </p>
-              {!onArc && (
-                <div className={s.row}>
-                  <span className={s.note}>This wallet is on another network. Setoff runs on Arc mainnet.</span>
-                  <button className="btn" onClick={() => ensureArc().catch(() => {})}>Switch to Arc</button>
-                </div>
-              )}
-              <div className={s.row}>
-                <span className={s.label}>Withdrawable</span>
-                <span className={`fig ${s.big}`}>{owed == null ? "—" : `${formatUsdc(owed, 4)} USDC`}</span>
-              </div>
-              {owed != null && owed > 0n && (
-                <button className="btn" onClick={() => tx.run("withdraw", [])} disabled={tx.busy}>
-                  Withdraw <span className="fig">{formatUsdc(owed, 4)} USDC</span>
-                </button>
-              )}
-              <TxStatus state={tx.state} doneLabel="Withdrawn" />
-              <button className={`link ${s.disconnect}`} onClick={() => { disconnect(); setOpen(false); }}>Disconnect</button>
-            </>
+            <span>{connecting ? "Connecting…" : "Connect wallet"}</span>
           )}
-        </div>
-      )}
-    </div>
+          <ChevronDown className="text-graphite" aria-hidden="true" />
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent align="end" sideOffset={10} className="plate w-[min(340px,calc(100vw-24px))] gap-4 rounded-plate bg-plate p-5 text-[13px] ring-0" aria-label="Wallet">
+        {!account ? (
+          <>
+            <p className="legend text-ink">Connect a wallet on Arc</p>
+            {wallets.length === 0 ? (
+              <p className="leading-[1.55] text-graphite">No browser wallet found. Install one such as Rabby or MetaMask, then reload.</p>
+            ) : (
+              <ul className="well grid gap-1.5 p-1.5">
+                {wallets.map((w) => (
+                  <li key={w.info.uuid}>
+                    <button className="key w-full justify-start" onClick={() => connect(w).then(() => setOpen(false))} disabled={connecting}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- the wallet supplies its own data-URI icon */}
+                      <img src={w.info.icon} alt="" width={22} height={22} />
+                      <span>{w.info.name}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {error && <p className="leading-[1.5] text-ink" role="alert">{error}</p>}
+          </>
+        ) : (
+          <>
+            <a href={addressUrl(account)} target="_blank" rel="noreferrer" className="fig inline-flex w-fit items-center gap-1 text-[14px] font-medium">
+              {short(account)}<ArrowUpRight className="size-3.5" aria-hidden="true" />
+            </a>
+            {!onArc && (
+              <div className="well grid justify-items-start gap-3 p-3.5">
+                <span className="leading-[1.5] text-graphite">This wallet is on another network. Setoff runs on Arc mainnet.</span>
+                <button className="key key-sm" onClick={() => ensureArc().catch(() => {})}>Switch to Arc</button>
+              </div>
+            )}
+            <div className="well grid gap-1 px-3.5 py-3">
+              <span className="legend">Withdrawable</span>
+              <span className="fig text-[20px]">{owed == null ? "—" : `${formatUsdc(owed, 4)} USDC`}</span>
+            </div>
+            {owed != null && owed > 0n && (
+              <button className="key key-sign" onClick={() => tx.run("withdraw", [])} disabled={tx.busy}>
+                Withdraw <span className="fig">{formatUsdc(owed, 4)} USDC</span>
+              </button>
+            )}
+            <TxStatus state={tx.state} doneLabel="Withdrawn" />
+            <button className="link w-fit text-[12.5px] text-graphite" onClick={() => { disconnect(); setOpen(false); }}>Disconnect</button>
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }

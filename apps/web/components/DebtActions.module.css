@@ -1,4 +1,0 @@
-.panel { display: grid; gap: 14px; justify-items: start; padding: 20px 0 0; border-top: var(--rule-total); }
-.role { color: var(--endorse); }
-.lead { font-size: 14px; line-height: 1.55; max-width: 44ch; }
-.note { font-size: 13.5px; line-height: 1.55; color: var(--graphite); max-width: 44ch; }

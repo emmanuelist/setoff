@@ -1,49 +1,60 @@
-/* Setoff — the clearing room. Tokens are the authority; DESIGN.md explains them. */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Setoff — the clock room. Tokens are the authority; DESIGN.md explains them. */
 
 :root {
-  /* Statement (light) */
-  --ground: #eef0eb;
+  /* The wall, and the instrument plates set into it */
+  --wall: #d6d9d9;
+  --plate: #eceeee;
+  --plate-edge: #c3c7c7;
+  --well: #f5f6f6;
+  --enamel: #fbfcfb;
+  --enamel-edge: #dde1e0;    /* where the face meets the bezel */
+  --steel-hi: #f6f7f4;
+  --steel: #b9bcb5;
+  --steel-lo: #7e827b;
+
+  /* Ink */
   --ink: #1d1b18;
   --graphite: #595b56;
   --faint: #80827c;
   --rule: #c7cac2;
-  --endorse: #4a3a92;
-  --returned: #b8361c;
-  --field: #f7f8f5;          /* an input: one step lighter than the ground */
+  --on-ink: #eef0eb;
 
+  /* Recorder ribbon: violet prints a signed act, red prints late or refused */
+  --endorse: #4a3a92;
+  --endorse-hi: #5e4cb2;
+  --endorse-lo: #2e2465;
+  --returned: #ad3219;
+
+  /* Keys */
+  --key: #f8f9f9;
+  --key-skirt: #aeb2b2;
+  --key-ink: #2a2824;
+  --key-ink-skirt: #0f0e0c;
+
+  /* Card stock: one colour per currency, and colour only ever means currency.
+     No stock sits in the red or violet bands: those belong to the ribbon. */
   --tint-usd: #d9e6d3;
   --code-usd: #2d5a27;
   --tint-eur: #d6e0ee;
   --code-eur: #274a7a;
-  --tint-mxn: #eed8d5;
-  --code-mxn: #8a302a;
+  --tint-mxn: #cfe6e3;
+  --code-mxn: #1b5a53;
   --tint-brl: #eee3c6;
   --code-brl: #6f5210;
-  --tint-jpy: #e2dcec;
-  --code-jpy: #54467a;
-
-  /* Floor (dark) */
-  --ink-2: #2b2824;
-  --on-ink: #eef0eb;
-  --on-ink-dim: #a7a49c;
-  --on-ink-mute: #6f6c65;
-  --on-ink-rule: #3a3732;
-  --floor-lift: #22201c;     /* a floor cell under the pointer */
-  --panel: #171614;          /* a panel raised over the floor */
-  --returned-lit: #f0a08f;   /* returned, refused or failed, on the floor */
-  --endorse-lit: #6c5ad6;
-  --line-usd: #99ce9a;
-  --line-eur: #94bfed;
-  --line-mxn: #ea988d;
-  --line-brl: #e9c67d;
-  --line-jpy: #bface4;
+  --tint-jpy: #e4e7c9;
+  --code-jpy: #4a5514;
 
   /* Geometry */
-  --rule-hair: 1px solid var(--rule);
-  --rule-ink: 1px solid var(--ink);
-  --rule-total: 2px solid var(--ink);
-  --radius: 0;
-  --gutter: clamp(16px, 3vw, 44px);
+  --r-plate: 14px;
+  --r-key: 9px;
+  --r-well: 8px;
+  --r-card: 4px;
+  --seam: 10px;
+  --gutter: clamp(12px, 2.2vw, 28px);
   --measure: 68ch;
 
   /* Type (next/font sets the variables) */
@@ -51,88 +62,249 @@
   --figure: var(--font-martian), ui-monospace, monospace;
 
   /* Motion */
-  --spring: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --spring: cubic-bezier(0.22, 1, 0.36, 1);   /* a quick lift that settles, no overshoot */
   --settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* The Radix primitives, mapped onto the room */
+  --background: var(--wall);
+  --foreground: var(--ink);
+  --popover: var(--plate);
+  --popover-foreground: var(--ink);
+  --muted: var(--well);
+  --muted-foreground: var(--graphite);
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--ink);
+  --destructive: var(--returned);
+  --radius: var(--r-key);
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: var(--ink); color-scheme: light; -webkit-text-size-adjust: 100%; }
-body {
-  font-family: var(--display);
-  font-variation-settings: "wdth" 100;
-  font-size: 15px;
-  line-height: 1.45;
-  color: var(--ink);
-  background: var(--ground);
-  -webkit-font-smoothing: antialiased;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+/* Only the room's own colours exist; the framework palette is switched off. */
+@theme {
+  --color-*: initial;
 }
-main { flex: 1; }
-a { color: inherit; }
-button, input, select { font: inherit; color: inherit; }
-img, svg { display: block; }
-:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
-/* ── Type primitives ──────────────────────────────────────────────── */
-.fig { font-family: var(--figure); font-variant-numeric: tabular-nums; font-variation-settings: "wdth" 87.5; }
-.wide { font-variation-settings: "wdth" 125; text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700; font-size: 11.5px; }
-.dim { color: var(--graphite); }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@theme inline {
+  --color-wall: var(--wall);
+  --color-plate: var(--plate);
+  --color-well: var(--well);
+  --color-enamel: var(--enamel);
+  --color-steel: var(--steel);
+  --color-ink: var(--ink);
+  --color-graphite: var(--graphite);
+  --color-faint: var(--faint);
+  --color-rule: var(--rule);
+  --color-on-ink: var(--on-ink);
+  --color-endorse: var(--endorse);
+  --color-returned: var(--returned);
+  --color-white: #fff;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
 
-/* Currency identity: a tint in the statement, a line on the floor. Never state. */
-.ccy-usd { --t: var(--tint-usd); --c: var(--code-usd); --l: var(--line-usd); }
-.ccy-eur { --t: var(--tint-eur); --c: var(--code-eur); --l: var(--line-eur); }
-.ccy-mxn { --t: var(--tint-mxn); --c: var(--code-mxn); --l: var(--line-mxn); }
-.ccy-brl { --t: var(--tint-brl); --c: var(--code-brl); --l: var(--line-brl); }
-.ccy-jpy { --t: var(--tint-jpy); --c: var(--code-jpy); --l: var(--line-jpy); }
+  --font-sans: var(--display);
+  --font-display: var(--display);
+  --font-figure: var(--figure);
 
-/* ── Signing acts are violet, and only signing acts ───────────────── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  border: 0; border-radius: var(--radius); cursor: pointer;
-  background: var(--endorse); color: #fff;
-  font-weight: 650; font-size: 14px; letter-spacing: 0.01em;
-  padding: 13px 20px; min-height: 46px;
-  text-decoration: none;
-  transition: transform 180ms var(--spring), background 180ms, box-shadow 180ms;
+  --radius-plate: var(--r-plate);
+  --radius-key: var(--r-key);
+  --radius-well: var(--r-well);
+  --radius-card: var(--r-card);
+
+  --ease-spring: var(--spring);
+  --ease-settle: var(--settle);
+  --ease-out-expo: var(--out-expo);
 }
-.btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -14px rgba(74, 58, 146, 0.7); }
-.btn:active { transform: none; }
-.btn:disabled { cursor: progress; opacity: 0.72; transform: none; box-shadow: none; }
-.btn.lit { background: var(--endorse-lit); box-shadow: 0 10px 30px -12px rgba(108, 90, 214, 0.7); }
-.btn.lit:hover { background: #7a69e0; }
-.link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
-.link:hover { text-decoration-thickness: 2px; }
 
-/* ── Marks: state is a mark someone made, never a pill ────────────── */
-.stamp {
-  display: inline-block; font-variation-settings: "wdth" 125; font-weight: 800; font-size: 12px;
-  letter-spacing: 0.16em; text-transform: uppercase; padding: 5px 9px 4px;
-  border: 2px solid currentColor; transform: rotate(-3deg); white-space: nowrap;
+@layer base {
+  html { background: var(--wall); color-scheme: light; -webkit-text-size-adjust: 100%; scrollbar-color: var(--steel) var(--wall); }
+  body {
+    font-family: var(--display);
+    font-variation-settings: "wdth" 100;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--ink);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgb(255 255 255 / 0.55), transparent 70%),
+      var(--wall);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    caret-color: var(--ink);
+  }
+  main { flex: 1; }
+  a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-thickness: 2px; }
+  button { cursor: pointer; }
+  ::selection { background: var(--ink); color: var(--on-ink); }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  h1, h2, h3 { text-wrap: balance; }
 }
-.stamp.endorsed { color: var(--endorse); }
-.stamp.returned, .stamp.refused { color: var(--returned); }
-.hold { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px; }
-.hold::before { content: ""; width: 8px; height: 8px; border: 1.5px solid currentColor; }
-.enc { font-family: var(--figure); padding-bottom: 2px; box-shadow: inset 0 -2px 0 currentColor; }
-.struck { text-decoration: line-through; text-decoration-thickness: 1.5px; }
 
-/* ── Clear band: machine notation at the foot of every item ───────── */
-.band { display: inline-flex; align-items: center; gap: 0.4em; font-family: var(--figure); font-variation-settings: "wdth" 87.5; }
-.band svg { height: 1.15em; width: auto; fill: currentColor; }
+@layer components {
+  /* ── Measurement: every amount, rate, ID, address and time ─────────── */
+  .fig { font-family: var(--figure); font-variant-numeric: tabular-nums; font-variation-settings: "wdth" 87.5; }
 
-/* ── Statement sections ───────────────────────────────────────────── */
-.sec { padding: 36px var(--gutter) 40px; border-bottom: var(--rule-ink); }
-.sec:last-child { border-bottom: 0; }
-.sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; }
-.sec-h .i { font-family: var(--figure); color: var(--faint); margin-right: 12px; letter-spacing: 0; font-weight: 500; text-transform: none; }
-.sec-h p { font-size: 12px; color: var(--graphite); max-width: 60ch; text-align: right; }
+  /* An engraved legend: the name of the instrument, cut into its plate */
+  .legend {
+    font-variation-settings: "wdth" 125; text-transform: uppercase; letter-spacing: 0.18em;
+    font-weight: 700; font-size: 10.5px; line-height: 1.2; color: var(--graphite);
+    text-shadow: 0 1px 0 rgb(255 255 255 / 0.95), 0 -0.5px 0 rgb(29 27 24 / 0.22);
+  }
 
-@media (max-width: 760px) {
-  .sec-h { flex-direction: column; gap: 6px; }
-  .sec-h p { text-align: left; }
+  /* ── The plate: powder-coated steel, set into the wall ──────────────── */
+  .plate {
+    position: relative; isolation: isolate;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.5) 0%, rgb(255 255 255 / 0) 38%, rgb(29 27 24 / 0.035) 100%), var(--plate);
+    border-radius: var(--r-plate);
+    box-shadow:
+      inset 0 1.5px 0 rgb(255 255 255 / 1),
+      inset 1px 0 0 rgb(255 255 255 / 0.55),
+      inset -1px 0 0 rgb(29 27 24 / 0.03),
+      inset 0 -2px 0 rgb(29 27 24 / 0.07),
+      0 0 0 1px rgb(29 27 24 / 0.11),
+      0 1px 1px rgb(29 27 24 / 0.1),
+      0 3px 6px -2px rgb(29 27 24 / 0.12),
+      0 22px 40px -22px rgb(29 27 24 / 0.55);
+  }
+  .plate::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0.55;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.11 0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  }
+
+  /* A mounted instrument: four domed rivets hold it to the wall. Only instruments carry them. */
+  .mounted::after {
+    content: ""; position: absolute; inset: 7px; pointer-events: none;
+    /* A domed rivet: lit top-left, shaded bottom-right, with a hairline shadow where it meets the plate. */
+    --rivet: radial-gradient(circle at 36% 30%, #fff 0 0.9px, var(--steel-hi) 1.6px, var(--steel) 3px, var(--steel-lo) 4.1px, rgb(29 27 24 / 0.55) 4.6px, rgb(29 27 24 / 0.12) 5.2px, transparent 5.8px);
+    background: var(--rivet) 0 0 / 12px 12px no-repeat, var(--rivet) 100% 0 / 12px 12px no-repeat, var(--rivet) 0 100% / 12px 12px no-repeat, var(--rivet) 100% 100% / 12px 12px no-repeat;
+  }
+  /* On a phone the plates are too small to carry fasteners without crowding the dial. */
+  @media (max-width: 639px) { .mounted::after { display: none; } }
+
+  /* A well: a window or field recessed into the plate */
+  .well {
+    background: linear-gradient(180deg, rgb(29 27 24 / 0.035), rgb(29 27 24 / 0) 30%), var(--well);
+    border-radius: var(--r-well);
+    box-shadow:
+      inset 0 2px 3px rgb(29 27 24 / 0.16),
+      inset 0 1px 1px rgb(29 27 24 / 0.14),
+      inset 0 0 0 1px rgb(29 27 24 / 0.1),
+      0 1px 0 rgb(255 255 255 / 0.95),
+      0 -1px 0 rgb(29 27 24 / 0.04);
+  }
+
+  /* ── Keys. Violet is the signing key, and only the signing key ───────── */
+  .key {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r-key);
+    font-weight: 650; font-size: 14px; letter-spacing: 0.01em; line-height: 1.1;
+    text-decoration: none; white-space: nowrap; color: var(--ink);
+    background: linear-gradient(180deg, #fdfdfd 0%, var(--key) 55%, #eceeee 100%);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 0 0 1px rgb(29 27 24 / 0.18),
+      0 2px 0 var(--key-skirt),
+      0 3px 1px rgb(29 27 24 / 0.1),
+      0 9px 16px -9px rgb(29 27 24 / 0.4);
+    transition: transform 110ms var(--settle), box-shadow 110ms var(--settle), filter 160ms;
+  }
+  .key:hover { text-decoration: none; filter: brightness(1.03); }
+  .key:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgb(29 27 24 / 0.18), 0 0 0 var(--key-skirt), 0 1px 1px rgb(29 27 24 / 0.12);
+  }
+  .key:disabled { cursor: progress; opacity: 0.62; }
+  .key svg { width: 16px; height: 16px; flex: none; }
+  .key-sm { min-height: 34px; padding: 0 12px; font-size: 13px; gap: 7px; }
+  .key-sign {
+    color: #fff;
+    background: linear-gradient(180deg, var(--endorse-hi) 0%, var(--endorse) 58%, #44358a 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.28),
+      0 0 0 1px var(--endorse-lo),
+      0 2px 0 var(--endorse-lo),
+      0 3px 1px rgb(29 27 24 / 0.16),
+      0 10px 20px -10px rgb(46 36 101 / 0.75);
+  }
+  .key-sign:active:not(:disabled) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 1px var(--endorse-lo), 0 0 0 var(--endorse-lo), 0 1px 1px rgb(29 27 24 / 0.2); }
+  .key-ink {
+    color: var(--on-ink);
+    background: linear-gradient(180deg, #3b3934 0%, var(--key-ink) 55%, #211f1b 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      0 0 0 1px var(--key-ink-skirt),
+      0 2px 0 var(--key-ink-skirt),
+      0 3px 1px rgb(29 27 24 / 0.16),
+      0 10px 20px -10px rgb(15 14 12 / 0.7);
+  }
+  .key-ink:active:not(:disabled) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 0 0 1px var(--key-ink-skirt), 0 0 0 var(--key-ink-skirt), 0 1px 1px rgb(29 27 24 / 0.2); }
+
+  /* ── Card stock: a debt is a card, tinted by the currency it was priced in ── */
+  .ccy-usd { --t: var(--tint-usd); --c: var(--code-usd); }
+  .ccy-eur { --t: var(--tint-eur); --c: var(--code-eur); }
+  .ccy-mxn { --t: var(--tint-mxn); --c: var(--code-mxn); }
+  .ccy-brl { --t: var(--tint-brl); --c: var(--code-brl); }
+  .ccy-jpy { --t: var(--tint-jpy); --c: var(--code-jpy); }
+  .stock {
+    position: relative; color: var(--ink);
+    background-color: var(--t, var(--enamel));
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65 0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23f)'/%3E%3C/svg%3E");
+    border-radius: var(--r-card);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.6),
+      inset 0 -1px 0 rgb(29 27 24 / 0.08),
+      0 0 0 1px rgb(29 27 24 / 0.1),
+      0 1px 0 rgb(29 27 24 / 0.1),
+      0 2px 3px -1px rgb(29 27 24 / 0.16),
+      0 18px 30px -20px rgb(29 27 24 / 0.6);
+  }
+  .code { color: var(--c); font-variation-settings: "wdth" 125; font-weight: 750; letter-spacing: 0.08em; }
+
+  /* A paid card is really perforated: the word is subtracted from the stock. */
+  .perforated {
+    -webkit-mask: linear-gradient(#000 0 0), var(--holes) right 24px top 22px / auto no-repeat;
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) exclude, var(--holes) right 24px top 22px / auto no-repeat;
+  }
+
+  /* ── Ribbon print: what the recorder put on the card ────────────────── */
+  .print { font-family: var(--figure); font-variation-settings: "wdth" 87.5; font-weight: 600; letter-spacing: 0.04em; text-shadow: 0 0 0.7px currentColor; }
+  .print-sign { color: var(--endorse); }
+  .print-late { color: var(--returned); }
+  .impress {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    font-variation-settings: "wdth" 125; font-weight: 800; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 4px 8px 3px; border: 1.5px solid currentColor; border-radius: 2px;
+    text-shadow: 0 0 0.6px currentColor;
+  }
+  .impress-sign { color: var(--endorse); }
+  .impress-late { color: var(--returned); }
+  .impress-sm { font-size: 9.5px; padding: 3px 6px 2px; }
+  .struck { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+  /* Clear band: machine notation at the foot of every card */
+  .band { display: inline-flex; align-items: center; gap: 0.4em; font-family: var(--figure); font-variation-settings: "wdth" 87.5; }
+  .band svg { height: 1.15em; width: auto; fill: currentColor; }
+
+  /* A plain text action inside prose */
+  .link { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+  .link:hover { text-decoration-thickness: 2px; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* The bento: whole modules on a fixed seam, recomposed by whole tiles */
+  .bento { display: grid; gap: var(--seam); grid-template-columns: repeat(12, minmax(0, 1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

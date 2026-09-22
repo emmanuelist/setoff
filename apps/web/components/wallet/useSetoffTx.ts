@@ -15,7 +15,7 @@ export type TxPhase =
   | { phase: "signing" }
   | { phase: "including"; hash: Hash }
   | { phase: "done"; hash: Hash; receipt: TransactionReceipt }
-  | { phase: "failed"; message: string; hash?: Hash };
+  | { phase: "failed"; message: string; hash?: Hash; refused?: boolean };
 
 /** What each Setoff refusal means, in words a person can act on. */
 const REASONS: Record<string, string> = {
@@ -83,7 +83,9 @@ export function useSetoffTx() {
         router.refresh();
         return receipt;
       } catch (error) {
-        setState({ phase: "failed", message: explain(error), hash });
+        // Red is only for the contract saying no; a declined signature or a dropped call is not a refusal.
+        const refused = (error instanceof BaseError && !!error.walk((e) => e instanceof ContractFunctionRevertedError)) || (error instanceof Error && /reverted/.test(error.message));
+        setState({ phase: "failed", message: explain(error), hash, refused });
         return null;
       }
     },

@@ -55,14 +55,17 @@ export function Perforation({ word = "CLEARED", height = 24, title }: { word?: s
   );
 }
 
-/** One mark per state, the same everywhere (DESIGN.md §1). */
+/** One mark per state, the same everywhere: what the recorder put on the card. */
 export function StateMark({ state, size = "md" }: { state: DebtState; size?: "sm" | "md" }) {
-  if (state === "accepted") return <span className="stamp endorsed" style={size === "sm" ? { fontSize: 10.5, padding: "4px 7px 3px" } : undefined}>Endorsed</span>;
-  if (state === "paid") return <Perforation word="PAID" height={size === "sm" ? 16 : 26} title="paid" />;
-  if (state === "cancelled") return <span className="dim struck" style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>Cancelled</span>;
-  return <span className="dim" style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>Proposed</span>;
+  const sm = size === "sm";
+  if (state === "accepted") return <span className={`impress impress-sign ${sm ? "impress-sm" : ""}`}>Endorsed</span>;
+  if (state === "paid") return <span className="text-ink"><Perforation word="PAID" height={sm ? 15 : 24} title="paid" /></span>;
+  const quiet = `legend ${sm ? "text-[9.5px]" : ""}`;
+  if (state === "cancelled") return <span className={`${quiet} struck`}>Cancelled</span>;
+  return <span className={quiet}>Proposed</span>;
 }
 
+/** The mark: a dial of ticks around one hub. Five currencies, one fixing. */
 export function Wordmark({ size = 22 }: { size?: number }) {
   return (
     <svg viewBox="0 0 22 22" width={size} height={size} aria-hidden="true">

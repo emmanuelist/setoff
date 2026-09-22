@@ -8,7 +8,6 @@ import { setoffAbi } from "@/lib/setoff-abi";
 import { TxStatus } from "./TxStatus";
 import { useSetoffTx } from "./wallet/useSetoffTx";
 import { useWallet } from "./wallet/WalletProvider";
-import s from "./DebtActions.module.css";
 
 export type DebtView = { id: string; creditor: Address; debtor: Address; currency: string; state: "proposed" | "accepted" | "paid" | "cancelled"; quoteDue: string | null };
 
@@ -45,54 +44,54 @@ export function DebtActions({ debt }: { debt: DebtView }) {
 
   let body: React.ReactNode;
   if (!me) {
-    body = <p className={s.note}>Connect the debtor&apos;s wallet to endorse or pay this debt, or the creditor&apos;s to cancel or withdraw.</p>;
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Connect the debtor&apos;s wallet to endorse or pay this debt, or the creditor&apos;s to cancel or withdraw.</p>;
   } else if (!role) {
-    body = <p className={s.note}>This wallet isn&apos;t a party to this debt. Only its debtor can endorse or pay it; only its creditor can cancel it.</p>;
+    body = <p className="text-[14px] leading-[1.55] text-graphite">This wallet isn&apos;t a party to this debt. Only its debtor can endorse or pay it; only its creditor can cancel it.</p>;
   } else if (debt.state === "proposed" && role === "debtor") {
     body = (
       <>
-        <p className={s.lead}>You&apos;re the debtor. Endorsing says you owe this, in {debt.currency}. You&apos;ll pay at the fixing on the day you pay.</p>
-        <button className="btn" onClick={() => act("Endorsed", "accept", [id])} disabled={tx.busy}>Endorse this debt</button>
+        <p className="text-[14px] leading-[1.55]">You&apos;re the debtor. Endorsing says you owe this, in {debt.currency}. You&apos;ll pay at the fixing on the day you pay.</p>
+        <button className="key key-sign w-full sm:w-auto" onClick={() => act("Endorsed", "accept", [id])} disabled={tx.busy}>Endorse this debt</button>
       </>
     );
   } else if (debt.state === "proposed" && role === "creditor") {
     body = (
       <>
-        <p className={s.lead}>Waiting for the debtor to endorse it. Until then you can withdraw the proposal.</p>
-        <button className="btn" onClick={() => act("Cancelled", "cancel", [id])} disabled={tx.busy}>Cancel this debt</button>
+        <p className="text-[14px] leading-[1.55]">Waiting for the debtor to endorse it. Until then you can withdraw the proposal.</p>
+        <button className="key key-sign w-full sm:w-auto" onClick={() => act("Cancelled", "cancel", [id])} disabled={tx.busy}>Cancel this debt</button>
       </>
     );
   } else if (debt.state === "accepted" && role === "debtor") {
     body = (
       <>
-        <p className={s.lead}>Pay in native USDC at the live fixing. The contract refuses a stale rate, and records the rate it used.</p>
-        <button className="btn" onClick={pay} disabled={tx.busy}>
+        <p className="text-[14px] leading-[1.55]">Pay in native USDC at the live fixing. The contract refuses a stale rate, and records the rate it used.</p>
+        <button className="key key-sign w-full sm:w-auto" onClick={pay} disabled={tx.busy}>
           Pay{debt.quoteDue ? <> <span className="fig">{formatUsdc(BigInt(debt.quoteDue), 4)} USDC</span></> : " at the fixing"}
         </button>
       </>
     );
   } else if (debt.state === "accepted" && role === "creditor") {
-    body = <p className={s.note}>Endorsed. Waiting for the debtor to pay at the fixing.</p>;
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Endorsed. Waiting for the debtor to pay at the fixing.</p>;
   } else if (debt.state === "paid" && role === "creditor" && owed === null) {
-    body = <p className={s.note}>Checking your payout…</p>;
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Checking your payout…</p>;
   } else if (debt.state === "paid" && role === "creditor") {
     body = owed && owed > 0n ? (
       <>
-        <p className={s.lead}>Paid. Your payout is waiting; withdraw it whenever you like.</p>
-        <button className="btn" onClick={() => act("Withdrawn", "withdraw", [])} disabled={tx.busy}>Withdraw <span className="fig">{formatUsdc(owed, 4)} USDC</span></button>
+        <p className="text-[14px] leading-[1.55]">Paid. Your payout is waiting; withdraw it whenever you like.</p>
+        <button className="key key-sign w-full sm:w-auto" onClick={() => act("Withdrawn", "withdraw", [])} disabled={tx.busy}>Withdraw <span className="fig">{formatUsdc(owed, 4)} USDC</span></button>
       </>
-    ) : <p className={s.note}>Paid, and your payout has been withdrawn.</p>;
+    ) : <p className="text-[14px] leading-[1.55] text-graphite">Paid, and your payout has been withdrawn.</p>;
   } else if (debt.state === "paid") {
-    body = <p className={s.note}>Paid at the fixing. Nothing left to do.</p>;
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Paid at the fixing. Nothing left to do.</p>;
   } else {
-    body = <p className={s.note}>Cancelled. Nothing is owed.</p>;
+    body = <p className="text-[14px] leading-[1.55] text-graphite">Cancelled. Nothing is owed.</p>;
   }
 
   return (
-    <div className={s.panel}>
-      {role && <p className={s.role}><span className="wide">You are the {role}</span></p>}
+    <div className="grid justify-items-start gap-4">
+      {role && <p className="legend text-ink">You are the {role}</p>}
       {body}
-      <TxStatus state={tx.state} tone="statement" doneLabel={done} />
+      <TxStatus state={tx.state} doneLabel={done} />
     </div>
   );
 }

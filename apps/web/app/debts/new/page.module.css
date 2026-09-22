@@ -1,9 +1,0 @@
-.page { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; padding: 44px var(--gutter) 64px; align-items: start; }
-.head { display: grid; gap: 16px; position: sticky; top: 28px; }
-.title { font-variation-settings: "wdth" 112; font-weight: 750; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.05; letter-spacing: -0.01em; max-width: 16ch; }
-.sub { font-size: 15px; line-height: 1.6; color: var(--graphite); max-width: 46ch; }
-
-@media (max-width: 900px) {
-  .page { grid-template-columns: 1fr; gap: 32px; padding-top: 32px; }
-  .head { position: static; }
-}

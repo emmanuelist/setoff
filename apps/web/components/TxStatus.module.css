@@ -1,9 +1,0 @@
-.status { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 8px; font-size: 12.5px; line-height: 1.5; color: var(--on-ink-dim); }
-.status a { color: inherit; }
-.statement { color: var(--graphite); }
-.done { color: var(--on-ink); }
-.statement.done { color: var(--ink); }
-.failed { color: var(--returned-lit); }
-.statement.failed { color: var(--returned); }
-.pulse { width: 7px; height: 7px; align-self: center; background: currentColor; animation: pulse 1s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: 0.25; } }
