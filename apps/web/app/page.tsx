@@ -68,7 +68,19 @@ export default async function Home() {
 
       <section className="sec">
         <div className="sec-h">
-          <div className="wide"><span className="i">02</span>How a debt clears</div>
+          <div className="wide"><span className="i">02</span>Try to break it</div>
+          <p>Stale rates, underpayment, the wrong payer, a double payment: run them against the live contract and watch each one refused by name.</p>
+        </div>
+        <Link href="/refusals" className={s.teaser}>
+          <span className={s.teaserTitle}>Open the refusal room</span>
+          <span className={s.teaserSub}>Twelve attempts, read-only calls against mainnet. Nothing is signed, nothing is spent.</span>
+          <span className={`fig ${s.teaserArrow}`} aria-hidden="true">→</span>
+        </Link>
+      </section>
+
+      <section className="sec">
+        <div className="sec-h">
+          <div className="wide"><span className="i">03</span>How a debt clears</div>
           <p>Four transactions. On Arc each one is final the moment it lands.</p>
         </div>
         <ol className={s.steps}>

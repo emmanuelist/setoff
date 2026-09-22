@@ -11,6 +11,7 @@ export function Masthead() {
       <nav className={s.nav} aria-label="Primary">
         <Link href="/">Debts</Link>
         <Link href="/debts/new">Record a debt</Link>
+        <Link href="/refusals">Refusal room</Link>
         <a href={SOURCIFY} target="_blank" rel="noreferrer">Contract ↗</a>
       </nav>
       <div className={s.right}>

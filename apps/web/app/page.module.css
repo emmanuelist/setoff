@@ -27,6 +27,12 @@
 .steps h3 { font-size: 16px; font-weight: 650; }
 .steps p { font-size: 13.5px; color: var(--graphite); line-height: 1.55; }
 .n { font-size: 12px; color: var(--faint); }
+.teaser { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 20px; align-items: center; padding: 22px 24px; background: var(--ink); color: var(--on-ink); text-decoration: none; transition: transform 200ms var(--spring), box-shadow 200ms; }
+.teaser:hover { transform: translateY(-3px); box-shadow: 0 24px 40px -28px rgba(29, 27, 24, 0.9); }
+.teaserTitle { font-size: 20px; font-weight: 700; font-variation-settings: "wdth" 110; }
+.teaserSub { grid-column: 1; font-size: 13px; color: var(--on-ink-dim); }
+.teaserArrow { grid-column: 2; grid-row: 1 / span 2; font-size: 28px; transition: transform 200ms var(--spring); }
+.teaser:hover .teaserArrow { transform: translateX(4px); }
 
 @media (max-width: 900px) {
   .floor { grid-template-columns: 1fr; padding-top: 40px; }
