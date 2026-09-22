@@ -1,60 +1,101 @@
-# Setoff — live demo run-of-show
+# Setoff — demo video run of show
 
-**Thesis in one line:** *Debts in five currencies clear at one on-chain fixing: only the net moves, and either every party settles or none does.*
+**Claim in one line:** *Debts in five currencies clear at one on-chain fixing: only the net
+moves, and either every party settles or none does.*
 
-Target: **~3 minutes**, then Q&A. Lead with feeling, escalate to proof, close on the thesis.
-Every claim on screen is live.
+**Format:** a recorded video of about **3 minutes**, linked from the README and the
+DoraHacks submission. There is no live pitch: reviewers get one link and a few minutes, so
+this video *is* the presentation.
+
+**Rules:**
+
+- Lead with feeling, escalate to proof, close on the claim.
+- Everything on screen is a real Arc mainnet transaction.
+- The demo parties are the builder's own wallets, and the voice-over says so once.
+
+**The moment:** second 40–70, when the gross total perforates and the net figure encodes.
+Slow down there. It's the proof component, and it gets the design budget.
 
 ---
 
-## Pre-flight (before you walk up)
+## Pre-flight (before recording)
 
-- [ ] Dev server running; front tab already on the demo route
-- [ ] Terminal tab open, large font, seeded and warm
-- [ ] Credentials / wallet set and funded on the right network
-- [ ] Tabs pre-opened in case wifi is slow: <the on-chain artifact>, <the live site>
-- [ ] Clean starting state — the path works from a cold browser
-- [ ] The one moment planned: <the beat you want everyone watching>
-- [ ] Backup ready: recorded video + screenshots
+- [ ] App deployed; the clearing page open at 1440 in a clean browser profile
+- [ ] Four party keys imported into a browser wallet; switching accounts rehearsed
+- [ ] Each party funded with ~1.25 USDC; the deployer holds gas
+- [ ] **Cycle 1** (the one that settles) debts proposed and endorsed; cutoff set a few
+      minutes ahead
+- [ ] **Cycle 2** (the one that is returned) prepared with a short funding deadline
+- [ ] Every Chainlink feed used is under 24 h old at the cutoff (check the fixing strip)
+- [ ] Explorer tabs pre-opened: fixing transaction, settlement transaction, void
+      transaction, verified contract on Sourcify
+- [ ] Screen recording at 1440×900, cursor highlighted, system notifications off
+- [ ] Voice-over script printed; take two full rehearsals before the keeper take
 
 ---
 
 ## Cold open — the problem (0:00–0:20)
 
-> "<The pain, in two sentences. No architecture, no 'we built'. They should recognise the
-> problem before they hear a solution.>"
+> "At half past three on the 26th of June 1974, German regulators closed Bankhaus
+> Herstatt. Banks that had already paid it Deutsche marks never received their dollars.
+> Half-settled is the worst state money can be in, and FX settlement risk still carries
+> Herstatt's name."
 
-## Act 1 — the feel (0:20–1:15)  ← the emotional beat
+On screen: black, then the Setoff wordmark and the claim, set in the product's own type.
 
-1. <Do the thing. It works.>
-   > "<One line naming what they just saw.>"
+## Act 1 — the clearing (0:20–1:25) ← the moment
 
-2. **<The reversal — revoke it, expire it, break it.>** (This is the moment. Slow down.)
-   > "<Why this is the hard half.>"
+1. **Pockets** (0:20–0:40). Four parties, seven debts, five currencies: MXN, EUR, BRL, JPY
+   and USD. Each debt is endorsed.
+   > "Four parties owe each other in five currencies. Paid gross, that's seven payments and
+   > seven currency conversions."
 
-3. <Repeat the same action. Show the different, honest outcome.>
-   > "<The claim, now demonstrated rather than asserted.>"
+2. **The fixing** (0:40–1:10). **Slow down.** Trigger the fixing. Slips sort into
+   pockets, the gross total perforates, and the net figure encodes.
+   > "One fixing, from Chainlink's live rates on Arc. Seven debts clear to one payment."
 
-## Act 2 — and it's real (1:15–2:30)
+   Hold on the proof line: *Debits = Credits*.
 
-```bash
-<commands proving this is not a UI trick>
-```
+3. **Fund and clear** (1:10–1:25). Switch to the one net debtor and fund. The clearing
+   settles: CLEARED perforates, and every creditor's balance becomes withdrawable.
+   > "Every creditor is paid in the same transaction. Or no one is."
 
-> "<Same system, different entry point. A layer, not a demo.>"
+## Act 2 — the reversal (1:25–2:00)
 
-Then click the verifiable artifact live — the transaction, the blob, the published package.
+1. Cycle 2. One debtor doesn't fund, and the deadline passes. Anyone can void it:
+   RETURNED UNPAID lands.
+   > "One party didn't pay, so nothing moved. Every deposit goes back, and the debts
+   > reopen. Nobody is left half-settled."
 
-## Close — the thesis (2:30–3:00)
+2. Withdraw a refund on screen.
+   > "Refunds and payouts are withdrawals, so one blocked party can never freeze everyone
+   > else's money."
 
-> "Debts in five currencies clear at one on-chain fixing: only the net moves, and either every party settles or none does."
+## Act 3 — and it's real (2:00–2:35)
 
-Then one sentence of limits before Q&A. It pre-empts the first question and reads as maturity.
+- Click through to the explorer: the fixing event (rates, round IDs, update times), the
+  settlement transaction, and the void transaction.
+- Show the contract verified on Sourcify.
+  > "USDC is Arc's native currency. Deposits are plain payments, with no token approvals
+  > anywhere in the protocol. Finality is instant, so a cleared cycle is final the moment
+  > it's included."
+
+## Close — the claim (2:35–3:00)
+
+> "Debts in five currencies clear at one on-chain fixing: only the net moves, and either
+> every party settles or none does."
+
+Then one sentence of limits:
+
+> "Creditors receive USDC at the fixing; local-currency settlement waits for StableFX and
+> local stablecoins on Arc. The four parties here are my own wallets. It isn't audited."
 
 ---
 
-## If something breaks
+## If something breaks while recording
 
-- Wifi dies → pre-opened tabs, then the recorded video
-- Chain is slow → the pre-made transaction link
-- Model stalls → cut the live call, narrate the terminal output
+- **A feed is older than 24 h:** that is the refusal state. Record it as a bonus beat,
+  then wait for the next round.
+- **An RPC hiccup:** retry. Arc finality is instant, so there's no half-state to recover.
+- **Any take with a wallet-popup error:** discard it. Never cut around a failure to
+  imply success.
