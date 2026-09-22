@@ -119,6 +119,33 @@
   --radius-well: var(--r-well);
   --radius-card: var(--r-card);
 
+  /* The type scale: one token per role (DESIGN.md, Typography). Functional text never
+     goes below 11px, body never below 12px. */
+  --text-label: 11px;
+  --text-label--line-height: 1.25;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.45;
+  --text-small: 13px;
+  --text-small--line-height: 1.5;
+  --text-body: 14px;
+  --text-body--line-height: 1.55;
+  --text-lead: 16px;
+  --text-lead--line-height: 1.55;
+  --text-heading: 17px;
+  --text-heading--line-height: 1.3;
+  --text-figure-m: 20px;
+  --text-figure-m--line-height: 1.2;
+  --text-figure-l: 24px;
+  --text-figure-l--line-height: 1.15;
+  --text-title: 28px;
+  --text-title--line-height: 1.05;
+  --text-display: clamp(36px, 4.4vw, 62px);
+  --text-display--line-height: 1;
+  --text-figure-xl: clamp(40px, 4.8vw, 60px);
+  --text-figure-xl--line-height: 0.95;
+  --text-figure-hero: clamp(46px, 6.4vw, 88px);
+  --text-figure-hero--line-height: 0.95;
+
   --ease-spring: var(--spring);
   --ease-settle: var(--settle);
   --ease-out-expo: var(--out-expo);
@@ -158,7 +185,7 @@
   /* An engraved legend: the name of the instrument, cut into its plate */
   .legend {
     font-variation-settings: "wdth" 125; text-transform: uppercase; letter-spacing: 0.18em;
-    font-weight: 700; font-size: 10.5px; line-height: 1.2; color: var(--graphite);
+    font-weight: 700; font-size: 11px; line-height: 1.25; color: var(--graphite);
     text-shadow: 0 1px 0 rgb(255 255 255 / 0.95), 0 -0.5px 0 rgb(29 27 24 / 0.22);
   }
 
@@ -202,6 +229,12 @@
       inset 0 0 0 1px rgb(29 27 24 / 0.1),
       0 1px 0 rgb(255 255 255 / 0.95),
       0 -1px 0 rgb(29 27 24 / 0.04);
+  }
+
+  /* Struck through: the span a set-off cancelled, left visible where it stood */
+  .hatch {
+    background-image: repeating-linear-gradient(-45deg, rgb(29 27 24 / 0.22) 0 1px, transparent 1px 5px);
+    box-shadow: inset 0 0 0 1px rgb(29 27 24 / 0.14);
   }
 
   /* ── Keys. Violet is the signing key, and only the signing key ───────── */
@@ -277,6 +310,14 @@
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) exclude, var(--holes) right 24px top 22px / auto no-repeat;
   }
+  /* On a narrow card the punch is smaller, so it never crosses the clear band. */
+  @media (max-width: 640px) {
+    .perforated {
+      -webkit-mask: linear-gradient(#000 0 0), var(--holes) right 16px top 18px / 56% auto no-repeat;
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) exclude, var(--holes) right 16px top 18px / 56% auto no-repeat;
+    }
+  }
 
   /* ── Ribbon print: what the recorder put on the card ────────────────── */
   .print { font-family: var(--figure); font-variation-settings: "wdth" 87.5; font-weight: 600; letter-spacing: 0.04em; text-shadow: 0 0 0.7px currentColor; }
@@ -284,13 +325,13 @@
   .print-late { color: var(--returned); }
   .impress {
     display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-    font-variation-settings: "wdth" 125; font-weight: 800; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    font-variation-settings: "wdth" 125; font-weight: 800; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
     padding: 4px 8px 3px; border: 1.5px solid currentColor; border-radius: 2px;
     text-shadow: 0 0 0.6px currentColor;
   }
   .impress-sign { color: var(--endorse); }
   .impress-late { color: var(--returned); }
-  .impress-sm { font-size: 9.5px; padding: 3px 6px 2px; }
+  .impress-sm { font-size: 11px; padding: 3px 6px 2px; }
   .struck { text-decoration: line-through; text-decoration-thickness: 1.5px; }
 
   /* Clear band: machine notation at the foot of every card */

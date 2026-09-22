@@ -28,6 +28,17 @@ export function clock(ts: number): string {
   return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`;
 }
 
+/**
+ * A moment on the chain's clock. Within half a day it is the time alone; further out it carries
+ * its date, because a funding deadline decides whether money moves or comes back.
+ */
+export function stamp(ts: number, now: number): string {
+  if (Math.abs(ts - now) <= 12 * 3600) return clock(ts);
+  const d = new Date(ts * 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} UTC`;
+}
+
 /** "3 min 12 s" / "1 h 04 min" / "2 d 3 h": a span of time, never shown as zero. */
 export function span(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));

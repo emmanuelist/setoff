@@ -7,6 +7,7 @@ import { getAddress, type Address } from "viem";
 import { useChainNow } from "@/lib/head";
 import { formatUsdc } from "@/lib/money";
 import { TxStatus } from "./TxStatus";
+import { ConnectKeys } from "./wallet/ConnectKeys";
 import { useSetoffTx } from "./wallet/useSetoffTx";
 import { useWallet } from "./wallet/WalletProvider";
 
@@ -21,7 +22,7 @@ export type CycleActionView = {
   positions: { party: Address; net: string; funded: boolean }[];
 };
 
-const text = "text-[14px] leading-[1.55]";
+const text = "text-body leading-[1.55]";
 
 /**
  * The act the cycle is waiting for, offered to whoever may make it, at the moment the contract
@@ -45,7 +46,7 @@ export function CycleActions({ cycle, readAt }: { cycle: CycleActionView; readAt
   let body: React.ReactNode;
 
   if (cycle.state === "settled") {
-    body = <p className={`${text} text-graphite`}>Settled. Every net creditor&apos;s payout is waiting as a withdrawal, in the wallet menu.</p>;
+    body = <p className={`${text} text-graphite`}>Nothing is left to do here. Each net creditor withdraws its payout from the wallet menu, whenever it likes; nothing is pushed.</p>;
   } else if (cycle.state === "void") {
     body = <p className={`${text} text-graphite`}>Voided. Every deposit is withdrawable by whoever made it, and every debt is back on the direct path, still endorsed.</p>;
   } else if (cycle.state === "open" && now < cycle.cutoff) {
@@ -80,9 +81,10 @@ export function CycleActions({ cycle, readAt }: { cycle: CycleActionView; readAt
     body = (
       <p className={`${text} text-graphite`}>
         {cycle.funded} of {cycle.debtors} net {cycle.debtors === 1 ? "debtor has" : "debtors have"} funded.
-        {mine ? (myNet < 0n ? " You have funded yours." : " You owe no net here; there is nothing for you to fund.") : " Connect a net debtor's wallet to fund its net."}
+        {mine ? (myNet < 0n ? " You have funded yours." : " You owe no net here; there is nothing for you to fund.") : ""}
       </p>
     );
+    if (!me) body = <><p className={`${text} text-graphite`}>{cycle.funded} of {cycle.debtors} net {cycle.debtors === 1 ? "debtor has" : "debtors have"} funded.</p><ConnectKeys why="Connect a net debtor's wallet to fund its net." /></>;
   } else if (now >= cycle.deadline) {
     body = (
       <>

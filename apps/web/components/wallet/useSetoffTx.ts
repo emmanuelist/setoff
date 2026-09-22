@@ -19,7 +19,7 @@ export type TxPhase =
 
 /** What each Setoff refusal means, in words a person can act on. */
 const REASONS: Record<string, string> = {
-  StaleFixing: "The fixing for this currency is older than 25 hours, so Setoff refuses it. Nothing was charged.",
+  StaleFixing: "The fixing for this currency is older than the contract accepts (its 24 h heartbeat plus an hour's grace), so Setoff refuses it. Nothing was charged.",
   InvalidAnswer: "The rate feed returned an invalid answer, so Setoff refuses it. Nothing was charged.",
   InvalidUpdatedAt: "The rate feed's timestamp is invalid, so Setoff refuses it. Nothing was charged.",
   Underpaid: "The fixing moved since your quote. Refresh and pay the new amount.",
@@ -59,7 +59,7 @@ function explain(error: unknown): string {
       if (name && REASONS[name]) return REASONS[name];
     }
     if (/insufficient funds/i.test(error.message)) return "This account doesn't hold enough USDC on Arc for the amount plus gas.";
-    return error.shortMessage;
+    return `Arc didn't accept this transaction: ${error.shortMessage} Nothing was charged; try again.`;
   }
   if (error instanceof Error && /reject|denied/i.test(error.message)) return "You declined in your wallet. Nothing was sent.";
   return error instanceof Error ? error.message : "Something went wrong.";

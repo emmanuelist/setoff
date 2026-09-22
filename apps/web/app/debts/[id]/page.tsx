@@ -53,18 +53,8 @@ export default async function DebtPage({ params }: PageProps<"/debts/[id]">) {
     <main className="px-[var(--gutter)] pt-[var(--seam)]">
       <h1 className="sr">Debt {debt.id.toString()}: {debt.currency} {formatAmount(debt.amount, debt.currency)}, {debt.state}</h1>
       <div className="bento">
-        <Plate
-          legend={<Link href="/" className="inline-flex items-center gap-1.5 no-underline hover:text-ink"><ArrowLeft className="size-3.5" aria-hidden="true" />Debts</Link>}
-          aside={<span className="legend text-ink">Debt <span className="fig tracking-normal">{pad(debt.id, 4)}</span></span>}
-          className="col-span-12 lg:col-span-7"
-        >
-          <div className="well p-2 sm:p-5">
-            <Slip debt={debt} quote={quote} receipt={receipt} now={now} cycle={cv ? { id: debt.cycleId, state: cv.cycle.state, fixedAt: cv.cycle.fixedAt, closedAt: cv.cycle.closedAt, usdc: cycleValue } : null} />
-          </div>
-        </Plate>
-
-        <div className="col-span-12 grid content-start gap-[var(--seam)] lg:col-span-5">
-          <Plate legend="Your act">
+        <div className="max-lg:contents lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:grid lg:content-start lg:gap-[var(--seam)]">
+          <Plate legend="Your act" className="order-1 col-span-12 lg:order-none">
             <DebtActions
               debt={{
                 id: debt.id.toString(),
@@ -77,9 +67,8 @@ export default async function DebtPage({ params }: PageProps<"/debts/[id]">) {
               }}
             />
           </Plate>
-
           {gauge && (
-            <Plate legend={gauge.legend} className={`ccy-${debt.currency.toLowerCase()}`}>
+            <Plate legend={gauge.legend} className={`order-3 col-span-12 lg:order-none ccy-${debt.currency.toLowerCase()}`}>
               <div className="grid items-center gap-5 sm:grid-cols-[minmax(0,180px)_1fr]">
                 <div className="mx-auto w-full max-w-[180px]">
                   <Gauge currency={debt.currency} ageSec={gauge.ageSec} maxAgeSec={maxAge} refused={gauge.refused} />
@@ -87,7 +76,7 @@ export default async function DebtPage({ params }: PageProps<"/debts/[id]">) {
                 {receipt ? (
                   <ReceiptRows debt={debt} receipt={receipt} />
                 ) : gauge.f && cycleFix ? (
-                  <dl className="grid text-[13px]">
+                  <dl className="grid text-small">
                     {([
                       ["Rate", gauge.f.currency === "USD" ? "1 : 1 by definition" : `${formatRate(gauge.f.answer, gauge.f.decimals)} USD per ${gauge.f.currency}`],
                       ...(gauge.f.currency !== "USD" ? [["Feed round", lastDigits(gauge.f.roundId)], ["Age at the fixing", age(gauge.ageSec ?? 0)]] : []),
@@ -101,7 +90,7 @@ export default async function DebtPage({ params }: PageProps<"/debts/[id]">) {
                     ))}
                   </dl>
                 ) : gauge.f ? (
-                  <dl className="grid text-[13px]">
+                  <dl className="grid text-small">
                     {[
                       ["Rate", gauge.f.currency === "USD" ? "1 : 1 by definition" : `${formatRate(gauge.f.answer, gauge.f.decimals)} USD per ${gauge.f.currency}`],
                       ...(gauge.f.currency !== "USD" ? [["Feed round", lastDigits(gauge.f.roundId)], ["Age now", age(gauge.ageSec ?? 0)]] : []),
@@ -114,7 +103,7 @@ export default async function DebtPage({ params }: PageProps<"/debts/[id]">) {
                     ))}
                   </dl>
                 ) : (
-                  <p className="text-[13.5px] leading-[1.55] text-graphite">
+                  <p className="text-body leading-[1.55] text-graphite">
                     The {debt.currency} fixing is older than {Math.round(maxAge / 3600)} hours, so the contract refuses to price this debt. It will again the moment the feed updates.
                   </p>
                 )}
@@ -122,6 +111,16 @@ export default async function DebtPage({ params }: PageProps<"/debts/[id]">) {
             </Plate>
           )}
         </div>
+
+        <Plate
+          legend={<Link href="/" className="inline-flex items-center gap-1.5 no-underline hover:text-ink"><ArrowLeft className="size-3.5" aria-hidden="true" />Debts</Link>}
+          aside={<span className="legend text-ink">Debt <span className="fig tracking-normal">{pad(debt.id, 4)}</span></span>}
+          className="order-2 col-span-12 lg:order-none lg:col-span-7 lg:col-start-1 lg:row-start-1"
+        >
+          <div className="well p-2 sm:p-5">
+            <Slip debt={debt} quote={quote} receipt={receipt} now={now} cycle={cv ? { id: debt.cycleId, state: cv.cycle.state, fixedAt: cv.cycle.fixedAt, closedAt: cv.cycle.closedAt, usdc: cycleValue } : null} />
+          </div>
+        </Plate>
       </div>
     </main>
   );

@@ -45,7 +45,7 @@ function useHands(head: Head | null, fallback: { number: bigint; timestamp: numb
 }
 
 /** The master clock: chain time, read from Arc's own blocks. Every figure on the page answers to it. */
-export function ChainClock({ readAt }: { readAt: { number: string; timestamp: number } }) {
+export function ChainClock({ readAt, compact = false }: { readAt: { number: string; timestamp: number }; compact?: boolean }) {
   const head = useHead();
   const [fallback] = useState(() => ({ number: BigInt(readAt.number), timestamp: readAt.timestamp }));
   const { hour, minute, second } = useHands(head, fallback);
@@ -53,8 +53,8 @@ export function ChainClock({ readAt }: { readAt: { number: string; timestamp: nu
 
   return (
     // On a phone the clock is a readout beside its block number; on a wall it is the centrepiece.
-    <div className="flex h-full items-center gap-5 sm:flex-col">
-      <svg viewBox="0 0 240 240" className="aspect-square w-[128px] flex-none sm:w-full sm:max-w-[300px]" role="img" aria-label="Chain clock, UTC, driven by Arc block timestamps">
+    <div className={`flex h-full items-center ${compact ? "gap-4 sm:flex-col sm:gap-3" : "gap-5 sm:flex-col"}`}>
+      <svg viewBox="0 0 240 240" className={`aspect-square flex-none ${compact ? "w-[112px] sm:w-full sm:max-w-[168px]" : "w-[128px] sm:w-full sm:max-w-[300px]"}`} role="img" aria-label="Chain clock, UTC, driven by Arc block timestamps">
         <defs>
           <linearGradient id="cc-bezel" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
             <stop offset="0" stopColor="var(--steel-hi)" />
@@ -89,8 +89,8 @@ export function ChainClock({ readAt }: { readAt: { number: string; timestamp: nu
           const major = i % 5 === 0;
           return <rect key={i} x={C - (major ? 2.6 : 0.8)} y={20} width={major ? 5.2 : 1.6} height={major ? 17 : 6} fill="var(--ink)" transform={`rotate(${i * 6} ${C} ${C})`} />;
         })}
-        <text x={C} y={C - 40} textAnchor="middle" className="legend" style={{ fontSize: 8.5, fill: "var(--graphite)" }}>UTC</text>
-        <text x={C} y={C + 50} textAnchor="middle" className="legend" style={{ fontSize: 7.5, fill: "var(--graphite)" }}>ARC · 5042</text>
+        <text x={C} y={C - 38} textAnchor="middle" className="legend" style={{ fontSize: 11, fill: "var(--ink)" }}>UTC</text>
+        <text x={C} y={C + 50} textAnchor="middle" className="legend" style={{ fontSize: 9.5, fill: "var(--ink)" }}>ARC · 5042</text>
         <g filter="url(#cc-lift)">
           <g ref={hour}><rect x={C - 4.5} y={C - 58} width="9" height="72" fill="var(--ink)" /></g>
           <g ref={minute}><rect x={C - 3.4} y={C - 88} width="6.8" height="106" fill="var(--ink)" /></g>
@@ -105,9 +105,11 @@ export function ChainClock({ readAt }: { readAt: { number: string; timestamp: nu
       </svg>
       <div className="grid w-full min-w-0 justify-items-start gap-1 sm:justify-items-center sm:text-center">
         <span className="legend">Block</span>
-        <NumberFlow value={Number(block)} className="fig text-[22px] leading-none font-medium sm:text-[30px]" format={{ useGrouping: true }} />
-        <span className="mt-1 text-[12.5px] text-graphite">
-          This page was read at block <span className="fig text-ink">{Number(readAt.number).toLocaleString("en-US")}</span>. Each block is final the moment it lands.
+        <span className="overflow-hidden" aria-label={`Latest block ${block.toLocaleString("en-US")}`}>
+          <NumberFlow value={Number(block)} className={`fig leading-none font-medium ${compact ? "text-figure-m" : "text-figure-l"}`} format={{ useGrouping: true }} aria-hidden="true" />
+        </span>
+        <span className="mt-1 text-small text-graphite">
+          {compact ? "Final the moment it lands." : <>This page was read at block <span className="fig text-ink">{Number(readAt.number).toLocaleString("en-US")}</span>. Each block is final the moment it lands.</>}
         </span>
       </div>
     </div>
@@ -118,10 +120,10 @@ export function ChainClock({ readAt }: { readAt: { number: string; timestamp: nu
 export function ChainReadout() {
   const head = useHead();
   return (
-    <span className="hidden items-center gap-2.5 text-[12px] text-graphite md:flex" aria-live="off">
+    <span className="hidden items-center gap-2.5 text-caption text-graphite md:flex" aria-live="off">
       <span className="legend">Arc 5042</span>
-      <span className="well flex h-8 items-center px-2.5">
-        {head ? <NumberFlow value={Number(head.number)} className="fig text-[12.5px] text-ink" /> : <span className="fig text-[12.5px] text-graphite">reading…</span>}
+      <span className="well flex h-8 items-center overflow-hidden px-2.5" role="img" aria-label={head ? `Latest Arc block ${head.number.toLocaleString("en-US")}` : "Reading the latest Arc block"}>
+        {head ? <NumberFlow value={Number(head.number)} className="fig text-small text-ink" aria-hidden="true" /> : <span className="fig text-small text-graphite">reading…</span>}
       </span>
     </span>
   );

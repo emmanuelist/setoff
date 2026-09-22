@@ -12,7 +12,7 @@ function Hash({ hash }: { hash: `0x${string}` }) {
 /** The one shared lifecycle view for every write, printed like the recorder's tape. A flow never strands in "pending". */
 export function TxStatus({ state, doneLabel = "Done" }: { state: TxPhase; doneLabel?: string }) {
   if (state.phase === "idle") return null;
-  const line = "well flex items-start gap-2.5 px-3.5 py-3 text-[13px] leading-[1.45]";
+  const line = "well flex items-start gap-2.5 px-3.5 py-3 text-small leading-[1.45]";
   const spin = <LoaderCircle className="mt-px size-4 flex-none animate-spin text-graphite" aria-hidden="true" />;
   switch (state.phase) {
     case "checking":

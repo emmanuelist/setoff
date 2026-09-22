@@ -6,5 +6,5 @@ export function CycleMark({ state, size = "md" }: { state: CycleState; size?: "s
   const sm = size === "sm";
   if (state === "settled") return <span className="text-ink"><Perforation word="CLEARED" height={sm ? 15 : 22} title="settled" /></span>;
   if (state === "void") return <span className={`impress impress-late ${sm ? "impress-sm" : ""}`}>Returned</span>;
-  return <span className={`legend ${sm ? "text-[9.5px]" : ""} text-ink`}>{state === "open" ? "Enrolling" : "Fixed"}</span>;
+  return <span className={`legend ${sm ? "text-label" : ""} text-ink`}>{state === "open" ? "Enrolling" : "Fixed"}</span>;
 }

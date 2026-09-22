@@ -31,10 +31,10 @@ export default async function NewDebt({ searchParams }: PageProps<"/debts/new">)
           initialCycle={initialCycle}
           intro={
             <div className="grid gap-4">
-              <h1 className="max-w-[18ch] text-[clamp(32px,3.8vw,50px)] leading-[1.02] font-bold tracking-[-0.02em] [font-variation-settings:'wdth'_108]">
+              <h1 className="max-w-[18ch] text-display leading-[1.02] font-bold tracking-[-0.02em] [font-variation-settings:'wdth'_108]">
                 Bill in the currency you invoiced in.
               </h1>
-              <p className="max-w-[58ch] text-[15px] leading-[1.55] text-graphite">
+              <p className="max-w-[58ch] text-lead leading-[1.55] text-graphite">
                 You&apos;re the creditor. The debtor endorses it, then pays in native USDC at the Chainlink fixing on the day they pay. Nothing is converted until then.
               </p>
             </div>

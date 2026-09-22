@@ -37,8 +37,8 @@ export function WalletMenu() {
           {account ? (
             <>
               {!onArc && <span className="legend text-ink">Wrong network</span>}
-              <span className="fig text-[12.5px]">{short(account)}</span>
-              {owed != null && owed > 0n && <span className="border-l border-rule pl-2 text-[12px] text-graphite"><span className="fig text-ink">{formatUsdc(owed, 2)}</span> to withdraw</span>}
+              <span className="fig text-small">{short(account)}</span>
+              {owed != null && owed > 0n && <span className="border-l border-rule pl-2 text-caption text-graphite"><span className="fig text-ink">{formatUsdc(owed, 2)}</span> to withdraw</span>}
             </>
           ) : (
             <span>{connecting ? "Connecting…" : "Connect wallet"}</span>
@@ -47,7 +47,7 @@ export function WalletMenu() {
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="end" sideOffset={10} className="plate w-[min(340px,calc(100vw-24px))] gap-4 rounded-plate bg-plate p-5 text-[13px] ring-0" aria-label="Wallet">
+      <PopoverContent align="end" sideOffset={10} className="plate w-[min(340px,calc(100vw-24px))] gap-4 rounded-plate bg-plate p-5 text-small ring-0" aria-label="Wallet">
         {!account ? (
           <>
             <p className="legend text-ink">Connect a wallet on Arc</p>
@@ -70,7 +70,7 @@ export function WalletMenu() {
           </>
         ) : (
           <>
-            <a href={addressUrl(account)} target="_blank" rel="noreferrer" className="fig inline-flex w-fit items-center gap-1 text-[14px] font-medium">
+            <a href={addressUrl(account)} target="_blank" rel="noreferrer" className="fig inline-flex w-fit items-center gap-1 text-body font-medium">
               {short(account)}<ArrowUpRight className="size-3.5" aria-hidden="true" />
             </a>
             {!onArc && (
@@ -81,7 +81,7 @@ export function WalletMenu() {
             )}
             <div className="well grid gap-1 px-3.5 py-3">
               <span className="legend">Withdrawable</span>
-              <span className="fig text-[20px]">{owed == null ? "—" : `${formatUsdc(owed, 4)} USDC`}</span>
+              <span className="fig text-figure-m">{owed == null ? "—" : `${formatUsdc(owed, 4)} USDC`}</span>
             </div>
             {owed != null && owed > 0n && (
               <button className="key key-sign" onClick={() => tx.run("withdraw", [])} disabled={tx.busy}>
@@ -89,7 +89,7 @@ export function WalletMenu() {
               </button>
             )}
             <TxStatus state={tx.state} doneLabel="Withdrawn" />
-            <button className="link w-fit text-[12.5px] text-graphite" onClick={() => { disconnect(); setOpen(false); }}>Disconnect</button>
+            <button className="link w-fit text-small text-graphite" onClick={() => { disconnect(); setOpen(false); }}>Disconnect</button>
           </>
         )}
       </PopoverContent>

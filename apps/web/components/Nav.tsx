@@ -23,7 +23,7 @@ export function Nav() {
             key={it.href}
             href={it.href}
             aria-current={on ? "page" : undefined}
-            className={`relative flex h-9 items-center justify-center rounded-[7px] px-2 text-[13px] font-semibold no-underline transition-colors duration-150 sm:px-4 ${on ? "text-ink" : "text-graphite hover:text-ink"}`}
+            className={`relative flex h-9 items-center justify-center rounded-[7px] px-2 text-small font-semibold no-underline transition-colors duration-150 sm:px-4 ${on ? "text-ink" : "text-graphite hover:text-ink"}`}
           >
             {on && (
               <motion.span

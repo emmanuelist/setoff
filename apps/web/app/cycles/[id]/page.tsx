@@ -10,6 +10,7 @@ import { CycleTimer } from "@/components/CycleTimer";
 import { FixingBoard } from "@/components/FixingBoard";
 import { DebtLedger, type Priced } from "@/components/DebtLedger";
 import { Plate } from "@/components/room/Plate";
+import { Party } from "@/components/wallet/Party";
 import { publicClient, txUrl } from "@/lib/chain";
 import { pad, short } from "@/lib/format";
 import { formatUsdc } from "@/lib/money";
@@ -56,11 +57,11 @@ export default async function CyclePage({ params }: PageProps<"/cycles/[id]">) {
           className="col-span-12 lg:col-span-8"
         >
           {debts.length === 0 ? (
-            <div className="well grid gap-2 p-6 text-[14px] text-graphite">
+            <div className="well grid gap-2 p-6 text-body text-graphite">
               <p>No debt has joined this cycle yet. A creditor bills into it, and the debt joins when its debtor endorses.</p>
             </div>
           ) : valuation.basis === "refused" ? (
-            <div className="well grid gap-2 p-6 text-[14px] leading-[1.55] text-graphite">
+            <div className="well grid gap-2 p-6 text-body leading-[1.55] text-graphite">
               <p><span className="print print-late">REFUSED</span> The {valuation.currency ?? "a"} fixing is {valuation.reason === "stale" ? `older than ${Math.round(maxAge / 3600)} hours` : "invalid"}, so the contract won&apos;t price this cycle until the feed updates. The fixing itself would be refused the same way.</p>
             </div>
           ) : (
@@ -90,16 +91,16 @@ export default async function CyclePage({ params }: PageProps<"/cycles/[id]">) {
             />
           </Plate>
           <Plate legend="On the chain" aside="Every step is a transaction">
-            <ol className="grid gap-3 text-[13px]">
-            <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Opened</span></span><TxLink hash={trail.opened}><span className="fig">{trail.opened ? short(trail.opened) : "—"}</span></TxLink><span className="text-[12px] text-graphite">by <span className="fig">{short(cycle.opener)}</span></span></li>
-            <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Fixed</span></span><TxLink hash={trail.fixed}><span className="fig">{trail.fixed ? short(trail.fixed) : "—"}</span></TxLink><span className="text-[12px] text-graphite">{cycle.fixedAt ? <>gross <span className="fig">{formatUsdc(cycle.gross, 4)}</span>, net <span className="fig">{formatUsdc(cycle.netMoved, 4)}</span> USDC</> : "not yet"}</span></li>
+            <ol className="grid gap-3 text-small">
+            <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Opened</span></span><TxLink hash={trail.opened}><span className="fig">{trail.opened ? short(trail.opened) : "—"}</span></TxLink><span className="text-caption text-graphite">by <Party address={cycle.opener} /></span></li>
+            <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Fixed</span></span><TxLink hash={trail.fixed}><span className="fig">{trail.fixed ? short(trail.fixed) : "—"}</span></TxLink><span className="text-caption text-graphite">{cycle.fixedAt ? <>gross <span className="fig">{formatUsdc(cycle.gross, 4)}</span>, net <span className="fig">{formatUsdc(cycle.netMoved, 4)}</span> USDC</> : "not yet"}</span></li>
             <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents">
               <span className="legend row-span-3">Funded</span></span>
               {trail.funded.length === 0 ? <span className="text-graphite">{cycle.fixedAt ? `${cycle.funded} of ${cycle.debtors}` : "not yet"}</span> : trail.funded.map((f) => (
-                <TxLink key={f.tx} hash={f.tx}><span className="fig">{short(f.party)}</span> <span className="fig">{formatUsdc(f.usdc, 4)}</span></TxLink>
+                <TxLink key={f.tx} hash={f.tx}><Party address={f.party} /> <span className="fig">{formatUsdc(f.usdc, 4)}</span> <span className="text-graphite">USDC</span></TxLink>
               ))}
             </li>
-            <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">{cycle.state === "void" ? "Voided" : "Settled"}</span></span><TxLink hash={trail.closed}><span className="fig">{trail.closed ? short(trail.closed) : "—"}</span></TxLink><span className="text-[12px] text-graphite">{cycle.state === "settled" ? <><span className="fig">{debts.length}</span> debts netted at once</> : cycle.state === "void" ? "every deposit refundable" : "not yet"}</span></li>
+            <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">{cycle.state === "void" ? "Voided" : "Settled"}</span></span><TxLink hash={trail.closed}><span className="fig">{trail.closed ? short(trail.closed) : "—"}</span></TxLink><span className="text-caption text-graphite">{cycle.state === "settled" ? <><span className="fig">{debts.length}</span> debts netted at once</> : cycle.state === "void" ? "every deposit refundable" : "not yet"}</span></li>
             </ol>
           </Plate>
         </div>

@@ -10,9 +10,10 @@ const exact = (d: string) => d as `${number}`;
 const hhmm = (ts: number) => utc(ts).split(" ").slice(3, 5).join(" ");
 
 /** One gauge per currency, all read in the same request against the contract's live refusal limit. */
-export function FixingBoard({ reads, now, maxAge, frozen = false }: { reads: FixingRead[]; now: number; maxAge: number; frozen?: boolean }) {
+export function FixingBoard({ reads, now, maxAge, frozen = false, lead }: { reads: FixingRead[]; now: number; maxAge: number; frozen?: boolean; lead?: React.ReactNode }) {
   return (
     <div className="col-span-12 grid grid-cols-2 gap-[var(--seam)] sm:grid-cols-3 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
+      {lead}
       {reads.map((r) => <FixingDial key={r.currency} read={r} now={now} maxAge={maxAge} frozen={frozen} />)}
     </div>
   );
@@ -39,10 +40,10 @@ function FixingDial({ read: r, now, maxAge, frozen }: { read: FixingRead; now: n
         ) : usd ? (
           <span className="legend">Par</span>
         ) : (
-          <span className="text-[12px] whitespace-nowrap">
+          <span className="text-caption whitespace-nowrap">
             <span className="fig text-ink">{age(ageSec ?? 0)}</span>
             {/* Words are never set in the figure face; on a phone the detail line says "as fixed". */}
-            {frozen && <span className="hidden text-[11.5px] text-graphite sm:inline"> at the fixing</span>}
+            {frozen && <span className="hidden text-caption text-graphite sm:inline"> at the fixing</span>}
           </span>
         )}
       </div>
@@ -54,25 +55,25 @@ function FixingDial({ read: r, now, maxAge, frozen }: { read: FixingRead; now: n
             <NumberFlow
               value={exact(usd ? "1" : formatRate(r.fixing.answer, r.fixing.decimals))}
               format={{ minimumFractionDigits: usd ? 4 : r.fixing.decimals > 6 ? 6 : 4, maximumFractionDigits: 8 }}
-              className="fig text-[12.5px] font-medium"
+              className="fig text-small font-medium"
               aria-label={usd ? "1 USD per USD" : `${formatRate(r.fixing.answer, r.fixing.decimals)} USD per ${r.currency}`}
             />
           ) : (
-            <span className="print print-late text-[11px] uppercase">No price</span>
+            <span className="print print-late text-label uppercase">No price</span>
           )}
         </div>
       </div>
 
-      <div className="grid gap-0.5 text-[12px] leading-snug text-graphite">
+      <div className="grid gap-0.5 text-caption leading-snug text-graphite">
         <span>{detail}</span>
         {r.ok && !usd ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <button type="button" className="w-fit cursor-help text-left text-graphite underline decoration-dotted underline-offset-3">
+              <button type="button" className="-my-1.5 w-fit cursor-help py-1.5 text-left text-graphite underline decoration-dotted underline-offset-3">
                 round <span className="fig">{lastDigits(r.fixing.roundId)}</span>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="fig max-w-[260px] rounded-well bg-ink text-[11.5px] text-on-ink">
+            <TooltipContent side="bottom" className="fig max-w-[260px] rounded-well bg-ink text-caption text-on-ink">
               Chainlink round {r.fixing.roundId.toString()}, updated {utc(r.fixing.updatedAt)}. Refused past {Math.round(maxAge / 3600)} h.
             </TooltipContent>
           </Tooltip>

@@ -15,11 +15,11 @@ function Result({ o }: { o: Outcome }) {
     return (
       <span className="grid justify-items-end gap-1">
         <span className="impress impress-late impress-sm">Refused</span>
-        <span className="print print-late text-[12px]">{o.error.name}</span>
+        <span className="print print-late text-caption">{o.error.name}</span>
       </span>
     );
   }
-  return <span className="print text-[12px] text-ink">CLEARS</span>;
+  return <span className="print text-caption text-ink">CLEARS</span>;
 }
 
 /** Every attempt runs against the live contract as a read-only eth_call. The tape prints what the contract said. */
@@ -69,10 +69,10 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
             {running ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Play aria-hidden="true" />}
             {running ? "Running…" : "Run every attempt"}
           </button>
-          <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-graphite" aria-live="polite">
-            <span><NumberFlow value={ran.length} className="fig text-[20px] text-ink" /> of <span className="fig">{all.length}</span> run</span>
-            <span className={surprises ? "font-semibold text-ink" : ""}><NumberFlow value={surprises} className="fig text-[20px] text-ink" /> {surprises === 1 ? "surprise" : "surprises"}</span>
-            {failed > 0 && <span className="font-semibold text-ink"><span className="fig text-[20px]">{failed}</span> couldn&apos;t run</span>}
+          <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small text-graphite" aria-live="polite">
+            <span><NumberFlow value={ran.length} className="fig text-figure-m text-ink" /> of <span className="fig">{all.length}</span> run</span>
+            <span className={surprises ? "font-semibold text-ink" : ""}><NumberFlow value={surprises} className="fig text-figure-m text-ink" /> off their rule</span>
+            {failed > 0 && <span className="font-semibold text-ink"><span className="fig text-figure-m">{failed}</span> couldn&apos;t run</span>}
           </p>
         </div>
       </section>
@@ -90,12 +90,12 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
                 return (
                   <article key={a.key} className={`stock grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-3 p-4 transition-[transform,box-shadow] duration-200 ease-spring ${on ? "-translate-y-[2px] shadow-[0_0_0_1.5px_var(--ink),0_18px_28px_-20px_rgb(29_27_24/0.7)]" : ""}`}>
                     <div className="grid content-start gap-1.5">
-                      <h3 className="text-[15px] font-semibold">{a.title}</h3>
-                      <p className="text-[13px] leading-[1.5] text-graphite">{a.detail}</p>
-                      <p className="text-[12px] text-graphite">Rule: {a.expect === "refused" ? "the contract must refuse this" : "the contract must accept this"}</p>
-                      {a.override && <p className="fig text-[11.5px] text-graphite">Simulated: {a.override}</p>}
-                      {o && !o.matched && <p className="text-[12.5px] font-semibold">This result does not match the rule.</p>}
-                      {failures[a.key] && <p className="text-[12.5px] font-semibold" role="alert">{failures[a.key]}</p>}
+                      <h3 className="text-lead font-semibold">{a.title}</h3>
+                      <p className="max-w-[68ch] text-small leading-[1.5] text-graphite">{a.detail}</p>
+                      <p className="text-caption text-graphite">Rule: {a.expect === "refused" ? "the contract must refuse this" : "the contract must accept this"}</p>
+                      {a.override && <p className="max-w-[68ch] text-caption text-graphite">Simulated: {a.override}</p>}
+                      {o && !o.matched && <p className="text-small font-semibold">This result does not match the rule.</p>}
+                      {failures[a.key] && <p className="text-small font-semibold" role="alert">{failures[a.key]}</p>}
                     </div>
                     <div className="grid content-between justify-items-end gap-3">
                       {o ? <Result o={o} /> : <span className="legend">Not run</span>}
@@ -118,15 +118,15 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
       <aside className="plate col-span-12 self-start p-5 sm:p-6 lg:sticky lg:top-[var(--seam)] lg:col-span-5 lg:col-start-8 lg:row-start-2" aria-label="Recorder tape">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="legend">Recorder tape</h2>
-          {current && (current.result === "refused" ? <span className="impress impress-late impress-sm">Refused</span> : <span className="print text-[12px]">CLEARS</span>)}
+          {current && (current.result === "refused" ? <span className="impress impress-late impress-sm">Refused</span> : <span className="print text-caption">CLEARS</span>)}
         </div>
         <div className="well p-2">
           <div className="stock bg-enamel [mask:radial-gradient(circle_4px_at_6px_0,#0000_97%,#000)_0_0/12px_100%_repeat-x] px-4 pt-5 pb-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {current && currentAttempt ? (
                 <motion.div key={`${current.key}-${current.at}`} initial={reduce ? false : { y: -14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 380, damping: 32 }}>
-                  <p className="mb-3 text-[15px] font-semibold">{currentAttempt.title}</p>
-                  <pre className="fig text-[11.5px] leading-[1.6] whitespace-pre-wrap text-ink [overflow-wrap:anywhere]">{JSON.stringify({
+                  <p className="mb-3 text-lead font-semibold">{currentAttempt.title}</p>
+                  <pre className="fig text-caption leading-[1.6] whitespace-pre-wrap text-ink [overflow-wrap:anywhere]">{JSON.stringify({
                     contract: SETOFF_ADDRESS,
                     kind: "eth_call — read-only, nothing signed",
                     block: Number(current.block),
@@ -140,22 +140,22 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
                   }, null, 2)}</pre>
                 </motion.div>
               ) : (
-                <p className="text-[13px] leading-[1.55] text-graphite">Run an attempt. The contract&apos;s own answer prints here, decoded from its revert data.</p>
+                <p className="text-small leading-[1.55] text-graphite">Run an attempt. The contract&apos;s own answer prints here, decoded from its revert data.</p>
               )}
             </AnimatePresence>
 
             <div className="mt-5 flex items-center justify-between border-t border-dashed border-ink/25 pt-3">
               <span className="legend">Log</span>
-              <span className="fig text-[12px] text-graphite">{log.length}</span>
+              <span className="fig text-caption text-graphite">{log.length}</span>
             </div>
             {log.length === 0 ? (
-              <p className="pt-2 text-[12.5px] text-graphite">Nothing run yet.</p>
+              <p className="pt-2 text-small text-graphite">Nothing run yet.</p>
             ) : (
               <ol className="grid max-h-[220px] gap-1 overflow-auto pt-2">
                 {log.map((o) => {
                   const a = all.find((x) => x.key === o.key);
                   return (
-                    <li key={`${o.key}-${o.at}`} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 text-[11.5px]">
+                    <li key={`${o.key}-${o.at}`} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 text-caption">
                       <span className="fig text-graphite">#{o.block}</span>
                       <span className="truncate">{a?.title}</span>
                       <span className={`print ${o.result === "refused" ? "print-late" : ""}`}>{o.error ? o.error.name : "clears"}</span>
@@ -166,7 +166,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
             )}
           </div>
         </div>
-        <p className="mt-4 text-[12px] text-graphite">
+        <p className="mt-4 text-caption text-graphite">
           Against <a href={addressUrl(SETOFF_ADDRESS)} target="_blank" rel="noreferrer" className="fig inline-flex items-center gap-0.5 text-ink">{short(SETOFF_ADDRESS)}<ArrowUpRight className="size-3" aria-hidden="true" /></a> on Arc mainnet, at the latest block of each run.
         </p>
       </aside>

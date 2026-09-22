@@ -23,7 +23,7 @@ export function PunchFields({ rows }: { rows: PunchRow[] }) {
             <span className={`legend ${r.ts ? "text-ink" : ""}`}>{r.label}</span>
             {r.ts ? (
               <motion.span
-                className={`print col-span-2 row-start-2 text-[13px] sm:col-span-1 sm:row-start-auto ${r.struck ? "text-graphite" : "print-sign"}`}
+                className={`print col-span-2 row-start-2 text-small sm:col-span-1 sm:row-start-auto ${r.struck ? "text-graphite" : "print-sign"}`}
                 initial={fresh ? { opacity: 0, scale: 1.35, filter: "blur(3px)" } : false}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 transition={{ type: "spring", stiffness: 700, damping: 26, delay: 0.15 }}
@@ -32,9 +32,9 @@ export function PunchFields({ rows }: { rows: PunchRow[] }) {
                 {utc(r.ts).toUpperCase()}
               </motion.span>
             ) : (
-              <span className="fig col-span-2 row-start-2 text-[13px] text-graphite sm:col-span-1 sm:row-start-auto">—</span>
+              <span className="fig col-span-2 row-start-2 text-small text-graphite sm:col-span-1 sm:row-start-auto">—</span>
             )}
-            <span className="col-start-2 row-start-1 text-right text-[12px] text-graphite sm:col-start-auto sm:row-start-auto">{r.ts ? r.who : ""}</span>
+            <span className="col-start-2 row-start-1 text-right text-caption text-graphite sm:col-start-auto sm:row-start-auto">{r.ts ? r.who : ""}</span>
           </li>
         );
       })}
@@ -67,7 +67,7 @@ export function PerforatorRun({ paid, word = "PAID" }: { paid: boolean; word?: s
   [...word].forEach((ch, n) => DOTS[ch]?.forEach((row, y) => [...row].forEach((b, x) => { if (b === "1") dots.push({ x: n * 6 * pitch + x * pitch + pitch / 2, y: y * pitch + pitch / 2, col: n * 6 + x }); })));
   const w = word.length * 6 * pitch - pitch;
   return (
-    <svg viewBox={`0 0 ${w} ${7 * pitch}`} width={w} height={7 * pitch} className="pointer-events-none absolute top-[22px] right-[24px]" aria-hidden="true">
+    <svg viewBox={`0 0 ${w} ${7 * pitch}`} width={w} height={7 * pitch} className="pointer-events-none absolute top-[18px] right-[16px] h-auto w-[56%] sm:top-[22px] sm:right-[24px] sm:w-auto" aria-hidden="true">
       {dots.map((d, i) => (
         <motion.circle key={i} cx={d.x} cy={d.y} r={2.1} fill="var(--ink)" initial={{ scale: 0, opacity: 0 }} animate={{ scale: [0, 1.5, 1], opacity: [0, 1, 0] }} transition={{ duration: 0.5, delay: 0.2 + d.col * 0.035 }} />
       ))}

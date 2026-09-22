@@ -6,8 +6,8 @@ export default function NoSuchDebt() {
     <main className="px-[var(--gutter)] pt-[var(--seam)]">
       <section className="plate grid min-h-[40svh] content-center justify-items-start gap-5 p-6 sm:p-10">
         <span className="legend">No such debt</span>
-        <h1 className="text-[clamp(26px,3vw,36px)] font-bold tracking-[-0.015em]">The contract has no debt with that number.</h1>
-        <div className="well grid h-24 w-full max-w-[420px] place-items-center text-[13px] text-graphite">An empty slot in the rack.</div>
+        <h1 className="text-title font-bold tracking-[-0.015em]">The contract has no debt with that number.</h1>
+        <div className="well grid h-24 w-full max-w-[420px] place-items-center text-small text-graphite">An empty slot in the rack.</div>
         <Link href="/" className="key"><ArrowLeft aria-hidden="true" />See every debt</Link>
       </section>
     </main>

@@ -5,6 +5,7 @@ import { addressUrl, blockUrl, txUrl } from "@/lib/chain";
 import { age, lastDigits, short, utc } from "@/lib/format";
 import { exactUsdc, formatAmount, formatRate, formatUsdc } from "@/lib/money";
 import { ClearBand, StateMark } from "./Marks";
+import { Party } from "./wallet/Party";
 import { PerforatorRun, PunchFields, type PunchRow } from "./Punch";
 
 const DOTS: Record<string, string[]> = {
@@ -52,62 +53,62 @@ export function Slip({ debt, quote, receipt, now, cycle = null }: { debt: Debt; 
     <div className="relative">
       <article className={`stock ccy-${ccy} grid gap-5 px-5 pt-5 pb-0 sm:px-8 sm:pt-7 ${paid || netted ? "perforated" : ""}`} style={style} aria-label={`Debt ${debt.id}, ${debt.state}`}>
         <header className="flex min-h-[42px] items-start justify-between gap-4">
-          <span className="text-[13px]"><ClearBand id={debt.id} /></span>
+          <span className="text-small"><ClearBand id={debt.id} /></span>
           {!paid && !netted && <StateMark state={debt.state} />}
         </header>
 
         <p className={`fig flex items-baseline gap-3 leading-[0.95] ${cancelled ? "text-graphite" : ""}`}>
-          <span className="code text-[clamp(15px,1.6vw,20px)]">{debt.currency}</span>
-          <span className={`text-[clamp(46px,6.6vw,88px)] font-medium tracking-[-0.02em] [font-variation-settings:'wdth'_80] ${cancelled ? "struck" : ""}`}>{formatAmount(debt.amount, debt.currency)}</span>
+          <span className="code text-heading">{debt.currency}</span>
+          <span className={`text-figure-hero font-medium tracking-[-0.02em] [font-variation-settings:'wdth'_80] ${cancelled ? "struck" : ""}`}>{formatAmount(debt.amount, debt.currency)}</span>
         </p>
 
-        <p className="text-[14px] text-graphite">
-          Owed by <a href={addressUrl(debt.debtor)} target="_blank" rel="noreferrer" className="fig whitespace-nowrap text-ink">{short(debt.debtor)}</a> to{" "}
-          <a href={addressUrl(debt.creditor)} target="_blank" rel="noreferrer" className="fig whitespace-nowrap text-ink">{short(debt.creditor)}</a>
+        <p className="text-body text-graphite">
+          Owed by <a href={addressUrl(debt.debtor)} target="_blank" rel="noreferrer" className="text-ink"><Party address={debt.debtor} /></a> to{" "}
+          <a href={addressUrl(debt.creditor)} target="_blank" rel="noreferrer" className="text-ink"><Party address={debt.creditor} /></a>
           {debt.ref && <> · reference <span className="fig text-ink">{debt.ref}</span></>}
         </p>
 
         <div className="grid justify-items-start gap-1.5">
           {paid && receipt && (
             <>
-              <span className="fig text-[24px] font-medium">{formatUsdc(receipt.usdc, 4)} <span className="text-[14px] text-graphite">USDC</span></span>
-              <span className="text-[12.5px] text-graphite">paid at the fixing · exactly <span className="fig">{exactUsdc(receipt.usdc)}</span></span>
+              <span className="fig text-figure-l font-medium">{formatUsdc(receipt.usdc, 4)} <span className="text-body text-graphite">USDC</span></span>
+              <span className="text-small text-graphite">paid at the fixing · exactly <span className="fig">{exactUsdc(receipt.usdc)}</span></span>
             </>
           )}
           {inCycle && cycle.usdc !== null && (
             <>
-              <span className="fig text-[24px] font-medium">{formatUsdc(cycle.usdc, 4)} <span className="text-[14px] text-graphite">USDC</span></span>
-              <span className="text-[12.5px] text-graphite">
+              <span className="fig text-figure-l font-medium">{formatUsdc(cycle.usdc, 4)} <span className="text-body text-graphite">USDC</span></span>
+              <span className="text-small text-graphite">
                 at <Link href={`/cycles/${cycle.id}`} className="text-ink">cycle {cycle.id}</Link>&apos;s fixing · exactly <span className="fig">{exactUsdc(cycle.usdc)}</span>
                 {netted ? " · set off against the cycle, only the net moved" : " · it nets when every debtor in the cycle has funded"}
               </span>
             </>
           )}
           {inCycle && cycle.usdc === null && debt.state !== "cancelled" && (
-            <span className="text-[13px] text-graphite">
+            <span className="text-small text-graphite">
               {debt.state === "proposed" ? "Joins " : "Clears in "}<Link href={`/cycles/${cycle.id}`} className="text-ink">cycle {cycle.id}</Link>
               {debt.state === "proposed" ? " when its debtor endorses it, and is priced at the cycle's fixing." : quote?.ok ? <>, priced at its fixing. At today&apos;s fixing it would be <span className="fig text-ink">{formatUsdc(quote.due, 4)} USDC</span>.</> : ", priced at its fixing."}
             </span>
           )}
           {!inCycle && debt.state === "accepted" && quote?.ok && (
             <>
-              <span className="fig text-[24px] font-medium">≈ {formatUsdc(quote.due, 4)} <span className="text-[14px] text-graphite">USDC</span></span>
-              <span className="text-[12.5px] text-graphite">at today&apos;s fixing, {age(now - quote.fixing.updatedAt)} old · priced exactly when paid</span>
+              <span className="fig text-figure-l font-medium">≈ {formatUsdc(quote.due, 4)} <span className="text-body text-graphite">USDC</span></span>
+              <span className="text-small text-graphite">at today&apos;s fixing, {age(now - quote.fixing.updatedAt)} old · priced exactly when paid</span>
             </>
           )}
           {!inCycle && debt.state === "accepted" && quote && !quote.ok && (
             <>
               <span className="impress impress-late">Refused</span>
-              <span className="text-[12.5px] text-graphite">The {debt.currency} fixing is stale, so the contract won&apos;t price this debt until the feed updates.</span>
+              <span className="text-small text-graphite">The {debt.currency} fixing is stale, so the contract won&apos;t price this debt until the feed updates.</span>
             </>
           )}
-          {!inCycle && debt.state === "proposed" && <span className="text-[13px] text-graphite">Not priced yet. A debt is priced at the fixing on the day it&apos;s paid.</span>}
-          {cancelled && <span className="text-[13px] text-graphite">Cancelled by its creditor before it was endorsed. It was never owed.</span>}
+          {!inCycle && debt.state === "proposed" && <span className="text-small text-graphite">Not priced yet. A debt is priced at the fixing on the day it&apos;s paid.</span>}
+          {cancelled && <span className="text-small text-graphite">Cancelled by its creditor before it was endorsed. It was never owed.</span>}
         </div>
 
         <PunchFields rows={rows} />
 
-        <footer className="flex min-h-[54px] items-center pb-1 text-[12px] text-graphite">
+        <footer className="flex min-h-[54px] items-center pb-1 text-caption text-graphite">
           <ClearBand id={debt.id} usdcWei={receipt?.usdc ?? (netted ? cycle?.usdc ?? null : null)} />
         </footer>
       </article>
@@ -128,7 +129,7 @@ export function ReceiptRows({ debt, receipt }: { debt: Debt; receipt: Receipt })
     ["Recorded at", utc(debt.closedAt ?? 0)],
   ];
   return (
-    <dl className="grid text-[13px]">
+    <dl className="grid text-small">
       {rows.map(([k, v]) => (
         <div key={k} className="flex items-baseline justify-between gap-4 border-b border-rule py-2 last:border-0">
           <dt className="text-graphite">{k}</dt>
