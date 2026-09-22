@@ -1,0 +1,48 @@
+.bed { display: grid; gap: 0; }
+.slip {
+  position: relative; display: grid; gap: 14px; padding: 22px 26px 0;
+  background: var(--t); color: var(--ink);
+  box-shadow: 0 1px 0 rgba(29, 27, 24, 0.08), 0 30px 60px -40px rgba(29, 27, 24, 0.75);
+  transition: transform 220ms var(--spring), box-shadow 220ms;
+}
+.slip:hover { transform: translateY(-2px) rotate(-0.25deg); box-shadow: 0 1px 0 rgba(29, 27, 24, 0.08), 0 36px 64px -40px rgba(29, 27, 24, 0.8); }
+/* The holes are real: the word is subtracted from the slip. */
+.perforated {
+  /* Top right: where every state's mark lives. */
+  -webkit-mask: linear-gradient(#000 0 0), var(--holes) right 26px top 22px / auto no-repeat;
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) exclude, var(--holes) right 26px top 22px / auto no-repeat;
+}
+.cancelled .amount { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--graphite); }
+.top { display: flex; justify-content: space-between; align-items: center; min-height: 34px; }
+.mark { display: flex; align-items: center; }
+.amount { font-size: clamp(44px, 6.4vw, 84px); line-height: 0.95; font-weight: 500; font-variation-settings: "wdth" 80; letter-spacing: -0.02em; }
+.code { color: var(--c); font-weight: 700; font-family: var(--display); font-variation-settings: "wdth" 125; font-size: 0.42em; letter-spacing: 0.08em; vertical-align: 0.55em; margin-right: 0.4em; }
+.parties { font-size: 14px; color: var(--graphite); }
+.parties a { color: var(--ink); }
+.usdc { display: grid; gap: 6px; justify-items: start; padding: 12px 0 4px; border-top: 1px dashed color-mix(in oklab, var(--ink) 25%, transparent); }
+.usdcFig { font-size: 22px; font-weight: 500; }
+.usdcNote { font-size: 12.5px; color: var(--graphite); }
+.foot { margin: 6px -26px 0; padding: 12px 26px 16px; border-top: 1px dashed color-mix(in oklab, var(--ink) 25%, transparent); font-size: 12px; color: var(--graphite); min-height: 58px; display: flex; align-items: center; }
+.receipt { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; margin-top: 18px; background: var(--rule); border: var(--rule-hair); }
+.receipt div { background: var(--ground); padding: 12px 14px; display: grid; gap: 4px; }
+.receipt dt { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite); }
+.receipt dd { font-size: 13.5px; }
+.timeline { list-style: none; display: grid; gap: 0; }
+.timeline li { position: relative; display: grid; grid-template-columns: 18px 1fr; gap: 2px 12px; padding: 0 0 18px; color: var(--faint); }
+.timeline li::before { content: ""; position: absolute; left: 4px; top: 12px; bottom: 0; width: 1px; background: var(--rule); }
+.timeline li:last-child::before { display: none; }
+.tick { width: 9px; height: 9px; margin-top: 4px; border: 1.5px solid currentColor; background: var(--ground); position: relative; z-index: 1; }
+.timeline li.reached { color: var(--ink); }
+.timeline li.reached .tick { background: var(--ink); }
+.tlLabel { font-weight: 650; font-size: 14px; grid-column: 2; }
+.tlTime { grid-column: 2; font-size: 12px; }
+.tlWho { grid-column: 2; font-size: 12px; color: var(--graphite); }
+
+@media (max-width: 760px) {
+  .receipt { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .receipt div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .slip { padding: 18px 18px 0; }
+  .foot { margin: 6px -18px 0; padding: 12px 18px 14px; }
+  .perforated { -webkit-mask-position: 0 0, right 18px top 18px; mask-position: 0 0, right 18px top 18px; }
+}

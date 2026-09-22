@@ -1,0 +1,14 @@
+.board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--on-ink-rule); border: 1px solid var(--on-ink-rule); }
+.cell { background: var(--ink); padding: 16px 18px 18px; display: grid; gap: 6px; align-content: start; transition: background 200ms; }
+.cell:hover { background: var(--floor-lift); }
+.code { font-variation-settings: "wdth" 125; font-weight: 800; font-size: 24px; letter-spacing: 0.06em; color: var(--l); line-height: 1; }
+.rate { font-size: 19px; color: var(--on-ink); }
+.par { font-weight: 650; font-size: 14px; color: var(--on-ink); padding-top: 4px; }
+.meta { font-size: 11px; color: var(--on-ink-dim); font-family: var(--figure); font-variation-settings: "wdth" 87.5; }
+.age { height: 3px; margin-top: 6px; background: rgba(238, 240, 235, 0.1); position: relative; }
+.age i { position: absolute; inset: 0 auto 0 0; background: var(--l); }
+
+@media (max-width: 900px) {
+  .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cell:first-child { grid-column: 1 / -1; }
+}

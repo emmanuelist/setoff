@@ -1,0 +1,140 @@
+/* Setoff — the clearing room. Tokens are the authority; DESIGN.md explains them. */
+
+:root {
+  /* Statement (light) */
+  --ground: #eef0eb;
+  --ink: #1d1b18;
+  --graphite: #595b56;
+  --faint: #80827c;
+  --rule: #c7cac2;
+  --endorse: #4a3a92;
+  --returned: #b8361c;
+  --field: #f7f8f5;          /* an input: one step lighter than the ground */
+
+  --tint-usd: #d9e6d3;
+  --code-usd: #2d5a27;
+  --tint-eur: #d6e0ee;
+  --code-eur: #274a7a;
+  --tint-mxn: #eed8d5;
+  --code-mxn: #8a302a;
+  --tint-brl: #eee3c6;
+  --code-brl: #6f5210;
+  --tint-jpy: #e2dcec;
+  --code-jpy: #54467a;
+
+  /* Floor (dark) */
+  --ink-2: #2b2824;
+  --on-ink: #eef0eb;
+  --on-ink-dim: #a7a49c;
+  --on-ink-mute: #6f6c65;
+  --on-ink-rule: #3a3732;
+  --floor-lift: #22201c;     /* a floor cell under the pointer */
+  --panel: #171614;          /* a panel raised over the floor */
+  --returned-lit: #f0a08f;   /* returned, refused or failed, on the floor */
+  --endorse-lit: #6c5ad6;
+  --line-usd: #99ce9a;
+  --line-eur: #94bfed;
+  --line-mxn: #ea988d;
+  --line-brl: #e9c67d;
+  --line-jpy: #bface4;
+
+  /* Geometry */
+  --rule-hair: 1px solid var(--rule);
+  --rule-ink: 1px solid var(--ink);
+  --rule-total: 2px solid var(--ink);
+  --radius: 0;
+  --gutter: clamp(16px, 3vw, 44px);
+  --measure: 68ch;
+
+  /* Type (next/font sets the variables) */
+  --display: var(--font-archivo), system-ui, sans-serif;
+  --figure: var(--font-martian), ui-monospace, monospace;
+
+  /* Motion */
+  --spring: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--ink); color-scheme: light; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--display);
+  font-variation-settings: "wdth" 100;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--ground);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+img, svg { display: block; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ── Type primitives ──────────────────────────────────────────────── */
+.fig { font-family: var(--figure); font-variant-numeric: tabular-nums; font-variation-settings: "wdth" 87.5; }
+.wide { font-variation-settings: "wdth" 125; text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700; font-size: 11.5px; }
+.dim { color: var(--graphite); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Currency identity: a tint in the statement, a line on the floor. Never state. */
+.ccy-usd { --t: var(--tint-usd); --c: var(--code-usd); --l: var(--line-usd); }
+.ccy-eur { --t: var(--tint-eur); --c: var(--code-eur); --l: var(--line-eur); }
+.ccy-mxn { --t: var(--tint-mxn); --c: var(--code-mxn); --l: var(--line-mxn); }
+.ccy-brl { --t: var(--tint-brl); --c: var(--code-brl); --l: var(--line-brl); }
+.ccy-jpy { --t: var(--tint-jpy); --c: var(--code-jpy); --l: var(--line-jpy); }
+
+/* ── Signing acts are violet, and only signing acts ───────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  border: 0; border-radius: var(--radius); cursor: pointer;
+  background: var(--endorse); color: #fff;
+  font-weight: 650; font-size: 14px; letter-spacing: 0.01em;
+  padding: 13px 20px; min-height: 46px;
+  text-decoration: none;
+  transition: transform 180ms var(--spring), background 180ms, box-shadow 180ms;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -14px rgba(74, 58, 146, 0.7); }
+.btn:active { transform: none; }
+.btn:disabled { cursor: progress; opacity: 0.72; transform: none; box-shadow: none; }
+.btn.lit { background: var(--endorse-lit); box-shadow: 0 10px 30px -12px rgba(108, 90, 214, 0.7); }
+.btn.lit:hover { background: #7a69e0; }
+.link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.link:hover { text-decoration-thickness: 2px; }
+
+/* ── Marks: state is a mark someone made, never a pill ────────────── */
+.stamp {
+  display: inline-block; font-variation-settings: "wdth" 125; font-weight: 800; font-size: 12px;
+  letter-spacing: 0.16em; text-transform: uppercase; padding: 5px 9px 4px;
+  border: 2px solid currentColor; transform: rotate(-3deg); white-space: nowrap;
+}
+.stamp.endorsed { color: var(--endorse); }
+.stamp.returned, .stamp.refused { color: var(--returned); }
+.hold { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px; }
+.hold::before { content: ""; width: 8px; height: 8px; border: 1.5px solid currentColor; }
+.enc { font-family: var(--figure); padding-bottom: 2px; box-shadow: inset 0 -2px 0 currentColor; }
+.struck { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* ── Clear band: machine notation at the foot of every item ───────── */
+.band { display: inline-flex; align-items: center; gap: 0.4em; font-family: var(--figure); font-variation-settings: "wdth" 87.5; }
+.band svg { height: 1.15em; width: auto; fill: currentColor; }
+
+/* ── Statement sections ───────────────────────────────────────────── */
+.sec { padding: 36px var(--gutter) 40px; border-bottom: var(--rule-ink); }
+.sec:last-child { border-bottom: 0; }
+.sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+.sec-h .i { font-family: var(--figure); color: var(--faint); margin-right: 12px; letter-spacing: 0; font-weight: 500; text-transform: none; }
+.sec-h p { font-size: 12px; color: var(--graphite); max-width: 60ch; text-align: right; }
+
+@media (max-width: 760px) {
+  .sec-h { flex-direction: column; gap: 6px; }
+  .sec-h p { text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}
