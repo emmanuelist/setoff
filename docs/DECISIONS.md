@@ -190,3 +190,57 @@ per-request rendering) stand.
 - **The v3 particle floor** is deferred to milestone 2, where a real cycle gives it data.
   A floor without a real cycle would be decoration.
 
+## D017 — A debt names its cycle when proposed; the debtor consents by accepting (2026-09-22)
+
+Closes open issue 1.
+
+- **The creditor names the cycle at proposal** (`proposeInCycle`). The debtor's `accept`
+  is the consent to that cycle and its schedule. A debt joins the cycle only when accepted,
+  so a proposal counts for nothing, as on the direct path.
+- **Enrolment closes at the cutoff.** A proposal still unaccepted at the cutoff can no longer
+  join; its creditor can cancel it.
+- **A cycle debt can't be paid directly** while it is in the cycle (`InCycle`).
+- **A void returns every debt to the direct path**, still accepted. It is not re-enrolled in
+  a later cycle, because that would need both parties to consent again. A new cycle takes
+  new proposals.
+
+**Why:** consent stays explicit and single-step. Neither party can drag a debt into a
+cycle, or out of one, alone.
+
+## D018 — Price each debt once; nets are exact; the cycle is capped (2026-09-22)
+
+Closes open issue 2.
+
+- **Each debt is converted to USDC once**, rounded up as on the direct path. That one value
+  is added to its creditor and subtracted from its debtor. Nets are sums of those values, so
+  they add up to **exactly zero**: deposits equal payouts to the unit, and there is no dust
+  to assign. The invariant suite and a fuzz test check this.
+- **Caps:**
+  - 16 debts and 8 parties per cycle.
+  - At most 10³⁰ (a debt's amount in 6-decimal units).
+  - A funding window of 10 minutes to 30 days.
+- **Measured at the caps:** fixing 16 debts in 5 currencies across 8 parties costs about
+  631,000 gas, and settling about 126,000.
+- **Schedule edges use explicit `>=` and `<`** (Arc timestamps can repeat):
+  - Enrol before the cutoff.
+  - Fix from the cutoff until the deadline.
+  - Fund before the deadline.
+  - Void from the deadline.
+  - Settle whenever every net debtor has funded, even after the deadline. Void refuses a
+    fully funded cycle, so a late settlement can't be raced.
+- **A stale rate refuses the whole fixing.** It can be retried until the deadline; after
+  that, the cycle can only be voided.
+
+## D019 — Milestone 2 ships as a new deployment of the same contract (2026-09-22)
+
+The milestone 1 contract at `0xcbEb…3ce7` has no owner and can't be upgraded, and cycles need
+their own debt registry. So `Setoff.sol` grows both paths and is deployed again.
+
+- The direct-path ABI is unchanged: `propose`, `accept`, `cancel`, `pay` and `withdraw`
+  keep their signatures. `State` gains `Netted` at the end, so existing state numbers keep
+  their meaning. `Debt` gains `cycleId`.
+- The v1 deployment stays in `docs/EVIDENCE.md` as milestone 1's record. Its verified
+  source is the commit it was deployed from.
+- The app moves to the new address in Phase 3. The refusal room's specimen debts are
+  recreated there, at a cost of cents.
+

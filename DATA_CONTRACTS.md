@@ -2,8 +2,8 @@
 
 Every value that crosses from the chain to the frontend, written before the contracts
 exist, so the frontend is never designed against imagined data. The **source of truth is
-always the contract**, as storage or an event (D009). Phase 1 entities are firm; Phase 2
-entities are a **draft**, to be settled when open issues 1 and 2 are closed.
+always the contract**, as storage or an event (D009). Phase 1 and Phase 2 entities are
+firm: they match `packages/contracts/src/Setoff.sol` as built (D017, D018, D019).
 
 **Units, everywhere:**
 
@@ -24,11 +24,12 @@ entities are a **draft**, to be settled when open issues 1 and 2 are closed.
 | `currency` | `bytes3` ISO 4217 | storage | `USD` `EUR` `MXN` `BRL` `JPY` |
 | `amount` | `uint256` | storage | Currency × 10⁶ |
 | `reference` | `bytes32` | storage | Creditor's invoice reference. Shown as text if printable, otherwise hex |
-| `cycleId` | `uint256` | storage | `0` means direct. Phase 2 |
+| `cycleId` | `uint32` | storage | `0` means direct. Named at proposal (`proposeInCycle`); reset to `0` if the cycle is voided (D017) |
 | `state` | enum | storage, plus events | See below |
 | `proposedAt` / `acceptedAt` / `closedAt` | block time | events | `closedAt` means paid or netted |
 
-**States:** `proposed` · `accepted` · `paid` · `netted` · `cancelled`
+**States:** `proposed` · `accepted` · `paid` · `cancelled` · `netted` (contract enum 1–5, in
+that order; `netted` was appended in D019 so the Phase 1 numbers keep their meaning)
 
 - `cancelled` is only reachable from `proposed`, and only by the creditor.
 - A debt in a **void** cycle returns to `accepted`.
@@ -55,7 +56,7 @@ One rate read, taken at payment time (direct debts) or at the cutoff (cycles).
 D008, never a fabricated rate.
 
 **Stale rule:** if `readAt − updatedAt` is more than the heartbeat (86,400 s) plus the grace
-period (open issue 3), the transaction reverts. The UI shows the refusal and the feed's age.
+period (1 h, D013), the transaction reverts. The UI shows the refusal and the feed's age.
 It never falls back to an approximate rate.
 
 ## Payment (Phase 1, direct path)
@@ -78,28 +79,47 @@ It never falls back to an approximate rate.
 **Events:** `Credited(party, amount, reason)`, where reason is `payment`, `settlement` or
 `refund`; and `Withdrawn(party, amount)`.
 
-## Cycle (Phase 2 — draft)
+## Cycle (Phase 2)
+
+Read with `cycle(id)`, `cycleDebts(id)`, `cyclePositions(id)` and `cycleFixing(id, ccy)`.
+Before the fixing, `preview(id)` gives the nets at the current fixings, and reverts on a
+stale rate exactly as the fixing would.
 
 | Field | Type | Source of truth | Notes |
 | --- | --- | --- | --- |
-| `id` | `uint256` | storage | |
-| `cutoff` | `uint64` | storage | Fixing allowed at or after this time |
-| `fundingDeadline` | `uint64` | storage | Void allowed at or after this time if anyone is unfunded |
+| `id` | `uint256` | storage | Sequential from 1 |
+| `opener` | `address` | storage | Anyone. Holds no power over the cycle |
+| `cutoff` | `uint64` | storage | Enrol before it; fix at or after it |
+| `fundingDeadline` | `uint64` | storage | Fix and fund before it; void at or after it if anyone is unfunded. 10 min to 30 days after the cutoff |
 | `state` | enum | storage + events | See below |
-| `debts` | `uint256[]` | storage | Capped (open issue 1) |
-| `fixings` | Fixing per currency | event `CycleFixed` | One read per currency per cycle |
-| `gross` | `uint256` | event `CycleFixed` | Sum of every debt in USDC at the fixing |
-| `netMoved` | `uint256` | event `CycleFixed` | Sum of net debits: the money that actually moves |
+| `debts` | `uint256[]` | storage `cycleDebts` | In acceptance order. At most 16 |
+| `parties` | `address[]` | storage `cyclePositions` | In joining order. At most 8 |
+| `fixings` | Fixing per currency | storage `cycleFixing`, event `CurrencyFixed` | One read per currency present, at the fixing |
+| `gross` | `uint256` | storage, event `CycleFixed` | Every debt in USDC at the fixing |
+| `netMoved` | `uint256` | storage, event `CycleFixed` | Sum of net debits: the money that actually moves |
+| `debtors` / `funded` | `uint8` | storage | Net debtors at the fixing, and how many have funded |
+| `held` | `uint256` | storage | Deposits received and not yet settled or refunded |
+| `fixedAt` / `closedAt` | `uint64` | storage | Block time of the fixing, and of the settlement or void |
 
-**States:** `open` · `fixed` · `settled` · `void`
+**States:** `open` · `fixed` · `settled` · `void` (contract enum 1–4)
 
-## Position (Phase 2 — draft)
+**Events:** `CycleOpened(cycleId, opener, cutoff, fundingDeadline)` ·
+`Enrolled(id, cycleId)` at proposal · `CurrencyFixed(cycleId, currency, answer, feedDecimals,
+roundId, updatedAt)` · `CycleFixed(cycleId, gross, netMoved, debtors)` ·
+`Funded(cycleId, party, usdc)` · `Netted(id, cycleId)` per debt ·
+`CycleSettled(cycleId, netMoved)` · `CycleVoided(cycleId, refunded)`.
+
+**A debt's value in a cycle** is `toUsdc(amount, cycleFixing(id, currency))`, a contract view
+over stored values. It is never computed in the app from its own rates.
+
+## Position (Phase 2)
 
 | Field | Type | Source of truth | Notes |
 | --- | --- | --- | --- |
 | `party` | `address` | storage | |
-| `net` | `int256` | storage | Native units. Negative is debit, positive is credit |
-| `funded` | `bool` | storage | Only meaningful for debits |
+| `net` | `int256` | storage | Native units, set at the fixing. Negative is debit, positive is credit. Sums to exactly zero across the cycle (D018) |
+| `index` | `uint8` | storage | 1-based place in the party list |
+| `funded` | `bool` | storage | Only meaningful for debits. A debtor funds exactly its net, once; any excess is credited back as a refund |
 
 **Position words:** `debit` · `credit` · `flat`. Each is conveyed by sign, word and
 position, never by colour alone (PRODUCT.md, Accessibility).

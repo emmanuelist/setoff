@@ -43,12 +43,23 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       and verify on Sourcify. Scaffold `apps/web` (create-next-app@latest, pin real
       versions in AGENTS.md) and build one real flow: propose, accept, pay, with the fixing
       receipt shown. **At this point the project is submittable on its own.**
-- [ ] **Phase 2 — Milestone 2: the netting cycle, contracts only (Sep 27–30).**
-      create → fix → fund → settle | void, pull payouts, and size caps. Invariant tests:
-      nets sum to zero at every fixing; the contract never pays out more than it received;
-      no partial settlement; void refunds every deposit.
-      **CHECKPOINT Sep 30:** if the invariant suite isn't green, drop milestone 2 and go
-      to Phase 5 with milestone 1 (D002).
+- [x] **Phase 2 — Milestone 2: the netting cycle, contracts only (built 2026-09-22, ahead of
+      the Sep 30 checkpoint; awaiting the gate).**
+      `Setoff.sol` now carries both paths (D019): open → enrol → fix → fund → settle | void,
+      with pull payouts and caps of 16 debts and 8 parties (D017, D018).
+      *Tests:* 60 green: 23 direct-path, 26 cycle, 7 invariants, and 4 mainnet-fork tests.
+      The fork tests settle a five-currency cycle, and void one, at the live Chainlink fixing.
+      The four promised invariants hold (nets sum to zero at every fixing; payouts never
+      exceed receipts; no partial settlement; a void refunds every deposit), plus three for
+      solvency, per-party totals, and debts closing only on their own path.
+      *Reach, measured:* of 257 invariant runs, 215 fix a cycle, 76 settle one, 165 void one,
+      and 65 void one holding deposits. See `afterInvariant` in the suite.
+      *Size and gas:* 19,142 bytes runtime (5.4 KB under the limit). At the caps, a fixing
+      costs about 631k gas and a settlement about 126k. A simulated mainnet deploy succeeds,
+      estimated at about 5.7M gas.
+      *Not yet:* deployed. The mainnet deployment and the app's move to it wait for the
+      Phase 2 gate.
+      **CHECKPOINT Sep 30:** met. The invariant suite is green, so milestone 2 stays in.
 - [ ] **Phase 3 — The signature surface (Oct 1–3).** The cycle statement: gross owed per
       currency collapsing to the net actually moved, with every figure linked to its
       transaction or read.
@@ -59,18 +70,17 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 2 — opens once the Phase 1 gate is confirmed.
+**Current phase:** 2 — built, and waiting at its gate to deploy. Phase 3 (the cycle surface
+in the app) follows.
 
 ## Open issues
 
 Track here until the GitHub repo exists, then move them to GitHub Issues.
 
-1. **Enrolment consent (Phase 2 design).** Does a debt name its cycle when proposed (so the
-   debtor consents by accepting), or can either party enrol it later? Leaning: named at
-   proposal. It's simpler, and consent is explicit.
-2. **Rounding (Phase 2).** Conversions must never let credits exceed debits. Round debits
-   up and credits down, and decide where the dust goes. It is bounded and must be written
-   down.
+1. ~~**Enrolment consent.**~~ Resolved, D017: a debt names its cycle when proposed, and
+   the debtor consents by accepting.
+2. ~~**Rounding.**~~ Resolved, D018: each debt is priced once and applied to both sides, so
+   the nets sum to exactly zero and there is no dust.
 3. ~~**Stale-feed grace period.**~~ Resolved, D013: 1 h, so `maxFixingAge` is 90,000 s.
    The UI must state it.
 4. ~~**evm_version and solc.**~~ Resolved, D013: solc 0.8.37 and `prague`, tested with Arc
