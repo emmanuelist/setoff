@@ -57,7 +57,8 @@ Fill in the rest from what actually installs in Phase 1, and state the prohibiti
 | viem | 2.56.8 — ships `arc` (5042) in `viem/chains`; do not hand-define the chain |
 | Next.js | 16.3.5 (App Router, Turbopack) — Next 15 and older are out; read `apps/web/node_modules/next/dist/docs/` before using an API |
 | React | 19.2.8 — the hooks lint forbids setState inside effect bodies; key readings to their account instead |
-| Styling | Plain CSS: tokens in `app/globals.css`, CSS Modules per component. **No Tailwind, no component library** (D014) |
+| Styling | Tailwind CSS 4.3.3 (`@tailwindcss/postcss`) over the tokens in `app/globals.css`; the framework palette is switched off (`--color-*: initial`), so only the room's colours exist (D016) |
+| UI libraries | shadcn/ui 4.21.0 on Radix (`radix-ui` 1.6.7; source in `components/ui/`), Motion 13.4.0, `@number-flow/react` 0.6.2, `lucide-react` 1.47.0, `cn` 0.3.2. **No styled kit** (MUI, Chakra, Ant, daisyUI): Radix brings behaviour, the room brings the look (D016) |
 | TypeScript | 5.x |
 
 ## Contracts: commands and the live deployment
@@ -152,8 +153,12 @@ All verified on mainnet on 2026-09-21; see `docs/RESEARCH.md`.
 
 - Direction is set in Phase 0 and recorded in `DESIGN.md`. Tokens live in the app's global
   stylesheet.
-- **No component library.** Hand-build against tokens. Headless primitives are allowed for
-  behaviour only.
+- **Libraries for behaviour and motion, the room for the look (D016).** Radix (through
+  shadcn's copied source) for popovers, tooltips and toggle groups; Motion for springs and
+  layout; NumberFlow for rolling figures; lucide for icons. Restyle every primitive against
+  the tokens; a stock shadcn look is a lapse.
+- **NumberFlow takes exact decimal strings** (`"0.05804588"` as `` `${number}` ``), never a
+  float built from money.
 - Token names are semantic and product-flavoured (debit, credit, flat, fixing, void…).
   Never `gray-100`.
 - Fonts through the framework's font loader only. **Never add font-CDN `<link>` tags.**
@@ -162,8 +167,9 @@ All verified on mainnet on 2026-09-21; see `docs/RESEARCH.md`.
   strand a flow in a permanent in-flight state.
 - **Money at the UI boundary** is a `bigint` in native units (18 decimals) or in the
   currency's minor units. Format for display only. A float never touches money.
-- One **signature component** carries the thesis: the cycle statement (gross owed →
-  net moved). It gets the design budget, and the video points at it.
+- One **signature component** carries the thesis: the fixing gauge (a rate's age against
+  the contract's refusal limit). Milestone 2's cycle statement joins it, and the video
+  points at both.
 
 ## Verification before any gate
 

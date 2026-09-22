@@ -33,6 +33,11 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       *Still to do by hand:* the same flow on mainnet with a real browser wallet.
       *Added:* the refusal room (`/refusals`, D015). Twelve read-only attempts against the
       live contract, 12 of 12 matching their rule.
+      *Redesigned (D016, 2026-09-22):* the app is rebuilt on Tailwind 4, shadcn/Radix,
+      Motion, NumberFlow and lucide, in the clock-room world. It has the chain clock, a fixing
+      gauge per currency, debts as punched card stock, and a recorder tape in the refusal
+      room. Lint 0, typecheck 0, build green, rendered at 1440 and 390. Two impeccable
+      finish-review rounds were run and their fixes applied.
       `packages/contracts`: propose → accept → pay-direct at a Chainlink fixing, with the
       stale-rate refusal and withdrawals. Include failure-path tests. Deploy to Arc mainnet
       and verify on Sourcify. Scaffold `apps/web` (create-next-app@latest, pin real

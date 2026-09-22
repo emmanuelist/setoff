@@ -140,7 +140,7 @@ submission.
 
 **No Tailwind.** The design system is bespoke tokens and hand-built components, and the
 proven specimen is plain CSS. Tailwind would duplicate every token in a second system.
-Tokens live in `app/globals.css`, with CSS Modules per component.
+Tokens live in `app/globals.css`, with CSS Modules per component. *Superseded by D016.*
 
 ## D015 — A refusal room, run against the live contract (2026-09-22)
 
@@ -161,3 +161,32 @@ contract at the latest block, and decodes each revert with the contract's own AB
 - **The attempts use real debts:** №0001 (paid) and №0002 (endorsed).
 - **A call that never reaches the contract is shown as a failure** on its own row, never
   as a refusal, and running the next attempt never hides it.
+
+## D016 — Rebuild the app on UI libraries, in a skeuomorphic clock room (2026-09-22)
+
+The owner judged the hand-built interface not good enough and asked for skeuomorphism,
+minimalism and a bento grid, built on real UI libraries. This supersedes D014's
+"no Tailwind, no component library". D014's data rules (contract views, bounded log reads,
+per-request rendering) stand.
+
+- **Stack:**
+  - Tailwind CSS 4 over the existing tokens, with the framework palette switched off.
+  - shadcn/ui on Radix for popover, tooltip and toggle group.
+  - Motion for springs and shared layout.
+  - NumberFlow for rolling figures, lucide for icons.
+  - Styled kits (MUI, Chakra and the like) stay out: they would bring someone else's look.
+- **World: the clock room.** The chain is the master clock (live block and chain time on
+  every page). Each currency's fixing is a gauge whose needle is the rate's age against the
+  contract's own refusal limit, with the red band past it. Debts are cards of
+  currency-tinted stock, punched at the chain's time in recorder ribbon:
+  - violet for signed acts;
+  - red for late or refused;
+  - perforated when paid.
+- **The mark laws carry over unchanged.** Violet only for signing. Red only for refused or
+  returned. Currency colour only for currency.
+- **Gradients appear only as physical light on physical objects** (steel bezels, glass,
+  key caps), never as colour fields. That keeps PRODUCT.md's "no gradients" commitment
+  in spirit.
+- **The v3 particle floor** is deferred to milestone 2, where a real cycle gives it data.
+  A floor without a real cycle would be decoration.
+
