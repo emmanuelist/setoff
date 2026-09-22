@@ -1,7 +1,7 @@
 import "server-only";
 import { BaseError, ContractFunctionRevertedError, type Address, type Hash, type Hex } from "viem";
 import { DEPLOY_BLOCK, DEPLOY_TIMESTAMP, LOG_WINDOW, SETOFF_ADDRESS, publicClient } from "./chain";
-import { decodeCurrency, encodeCurrency, isCurrency } from "./money";
+import { CURRENCIES, decodeCurrency, encodeCurrency, isCurrency, type Currency } from "./money";
 import { setoffAbi } from "./setoff-abi";
 
 const contract = { address: SETOFF_ADDRESS, abi: setoffAbi } as const;
@@ -258,22 +258,35 @@ export async function readCycles(limit = 50): Promise<Cycle[]> {
   return raw.map((c, i) => toCycle(ids[i], c));
 }
 
-/** A cycle with its debts, positions and fixings, and each debt's value from the contract's own toUsdc. */
+/**
+ * A cycle with its debts, positions and fixings, and each debt's value from the contract's own
+ * toUsdc. Arc's public RPC costs about a second per round trip, so this is written as three waves,
+ * not five: the bound check rides with the cycle's own record, and the fixings are read for every
+ * currency alongside the debts rather than after them.
+ */
 export async function readCycle(id: bigint): Promise<CycleView | null> {
-  const count = await readCycleCount();
-  if (id < 1n || id > count) return null;
-  const [raw, ids, [parties, positions]] = await Promise.all([
+  if (id < 1n) return null;
+  const [count, raw, ids, positionsRaw] = await Promise.all([
+    readCycleCount(),
     publicClient.readContract({ ...contract, functionName: "cycle", args: [id] }),
     publicClient.readContract({ ...contract, functionName: "cycleDebts", args: [id] }),
     publicClient.readContract({ ...contract, functionName: "cyclePositions", args: [id] }),
   ]);
+  if (id > count) return null;
+  const [parties, positions] = positionsRaw;
   const cycle = toCycle(id, raw);
-  const debts = await Promise.all(ids.map((d) => publicClient.readContract({ ...contract, functionName: "debt", args: [d] }).then((x) => toDebt(d, x))));
   const pos: Position[] = parties.map((party, i) => ({ party, net: positions[i].net, funded: positions[i].funded }));
+  const readDebt = (d: bigint) => publicClient.readContract({ ...contract, functionName: "debt", args: [d] }).then((x) => toDebt(d, x));
 
-  const currencies = [...new Set(debts.map((d) => d.currency))];
   if (cycle.fixedAt !== null) {
-    const stored = await Promise.all(currencies.map((c) => publicClient.readContract({ ...contract, functionName: "cycleFixing", args: [id, encodeCurrency(c as never)] })));
+    // The cycle's own stored fixings, read for every currency because which ones it used is only
+    // known once the debts arrive — and waiting for that would cost another round trip.
+    const [debts, storedAll] = await Promise.all([
+      Promise.all(ids.map(readDebt)),
+      Promise.all(CURRENCIES.map((c) => publicClient.readContract({ ...contract, functionName: "cycleFixing", args: [id, encodeCurrency(c)] }))),
+    ]);
+    const currencies = [...new Set(debts.map((d) => d.currency))];
+    const stored = currencies.map((c) => storedAll[CURRENCIES.indexOf(c as Currency)]);
     const values = await Promise.all(
       debts.map((d) => publicClient.readContract({ ...contract, functionName: "toUsdc", args: [d.amount, stored[currencies.indexOf(d.currency)]] })),
     );
@@ -281,9 +294,15 @@ export async function readCycle(id: bigint): Promise<CycleView | null> {
   }
 
   // Not fixed yet: what it would come to at the live fixings, refused exactly as the fixing would be.
+  const debts = await Promise.all(ids.map(readDebt));
+  const currencies = [...new Set(debts.map((d) => d.currency))];
   try {
-    const [pParties, nets, gross, netMoved] = await publicClient.readContract({ ...contract, functionName: "preview", args: [id] });
-    const live = await Promise.all(currencies.map((c) => publicClient.readContract({ ...contract, functionName: "fixingOf", args: [encodeCurrency(c as never)] })));
+    const [previewed, liveAll] = await Promise.all([
+      publicClient.readContract({ ...contract, functionName: "preview", args: [id] }),
+      Promise.all(CURRENCIES.map((c) => publicClient.readContract({ ...contract, functionName: "fixingOf", args: [encodeCurrency(c)] }))),
+    ]);
+    const [pParties, nets, gross, netMoved] = previewed;
+    const live = currencies.map((c) => liveAll[CURRENCIES.indexOf(c as Currency)]);
     const values = await Promise.all(
       debts.map((d) => publicClient.readContract({ ...contract, functionName: "toUsdc", args: [d.amount, live[currencies.indexOf(d.currency)]] })),
     );
