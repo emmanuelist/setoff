@@ -21,9 +21,16 @@ users.
 | Contract | Address | Deployed | Verified |
 | --- | --- | --- | --- |
 | Setoff (milestone 1: debts priced in currency, paid at a fixing) | [`0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7`](https://explorer.arc.io/address/0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7) | [tx `0x0c63…018c`](https://explorer.arc.io/tx/0x0c63055b23b2273f82a5007301f89f41ea14da1811e8f7b89c19efaa63a5018c), block 22,094,796, 2026-09-22 | [Sourcify: exact match](https://sourcify.dev/server/v2/contract/5042/0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7) (creation and runtime), solc 0.8.37, `prague` |
+| Setoff (milestone 2: both paths, plus netting cycles; D019) | [`0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6`](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6) | [tx `0xbf16…d04f`](https://explorer.arc.io/tx/0xbf16e693878e6460878e6fea1f8c0b124c8ac4ec8e15c002e71754d3e0aad04f), block 22,187,522, 2026-09-22, from commit `9b57f3c` | [Sourcify: exact match](https://sourcify.dev/server/v2/contract/5042/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6) (creation and runtime), solc 0.8.37, `prague` |
 
-- **Constructor:** EUR, MXN, BRL and JPY feeds (see `AGENTS.md`), `maxFixingAge` 90,000 s.
-- **Governance:** no owner and no admin.
+- **Constructor (both):** EUR, MXN, BRL and JPY feeds (see `AGENTS.md`), `maxFixingAge`
+  90,000 s.
+- **Governance (both):** no owner and no admin.
+- **Milestone 1's contract stays as its record.** Its source is the commit it was deployed
+  from (`6135a07`), and debt #1 was paid on it. The app moves to the milestone 2 contract
+  in Phase 3.
+- **Read back after deploy:** `maxFixingAge` 90,000; `MAX_CYCLE_DEBTS` 16; `cycleCount` 0;
+  currencies USD, EUR, MXN, BRL, JPY.
 
 ## Fixings, payments and cycles
 
@@ -65,5 +72,8 @@ attempts matched their rule.
 | --- | --- | --- |
 | Native USDC transfer | ≈ 0.00044 USDC (21,000 gas at ≈ 21 Gwei) | four funding transfers, 2026-09-21 |
 | Setoff deploy (2,111,361 gas at 22 Gwei) | 0.04645 USDC | deploy receipt |
+| Setoff milestone 2 deploy (4,397,110 gas at 25.75 Gwei) | 0.11323 USDC | deploy receipt |
+| Fixing a cycle at the caps (16 debts, 5 currencies, 8 parties) | ≈ 631,000 gas | `test_fullCycle_atTheCaps` |
+| Settling a cycle at the caps | ≈ 126,000 gas | `test_fullCycle_atTheCaps` |
 | One debt, propose → accept → pay → withdraw | 0.00635 USDC | four receipts above |
 | Gas floor | 20 Gwei | Arc docs; `eth_gasPrice` |

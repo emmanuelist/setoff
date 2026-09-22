@@ -43,8 +43,8 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       and verify on Sourcify. Scaffold `apps/web` (create-next-app@latest, pin real
       versions in AGENTS.md) and build one real flow: propose, accept, pay, with the fixing
       receipt shown. **At this point the project is submittable on its own.**
-- [x] **Phase 2 — Milestone 2: the netting cycle, contracts only (built 2026-09-22, ahead of
-      the Sep 30 checkpoint; awaiting the gate).**
+- [x] **Phase 2 — Milestone 2: the netting cycle, contracts only (done 2026-09-22, ahead of
+      the Sep 30 checkpoint).**
       `Setoff.sol` now carries both paths (D019): open → enrol → fix → fund → settle | void,
       with pull payouts and caps of 16 debts and 8 parties (D017, D018).
       *Tests:* 60 green: 23 direct-path, 26 cycle, 7 invariants, and 4 mainnet-fork tests.
@@ -57,8 +57,9 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       *Size and gas:* 19,142 bytes runtime (5.4 KB under the limit). At the caps, a fixing
       costs about 631k gas and a settlement about 126k. A simulated mainnet deploy succeeds,
       estimated at about 5.7M gas.
-      *Not yet:* deployed. The mainnet deployment and the app's move to it wait for the
-      Phase 2 gate.
+      *Deployed (gate confirmed):* `0x8A78…80d6`, block 22,187,522, from commit `9b57f3c`, for
+      0.113 USDC. Sourcify exact match on creation and runtime. The app still reads
+      milestone 1's contract; it moves in Phase 3.
       **CHECKPOINT Sep 30:** met. The invariant suite is green, so milestone 2 stays in.
 - [ ] **Phase 3 — The signature surface (Oct 1–3).** The cycle statement: gross owed per
       currency collapsing to the net actually moved, with every figure linked to its
@@ -70,8 +71,8 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 2 — built, and waiting at its gate to deploy. Phase 3 (the cycle surface
-in the app) follows.
+**Current phase:** 3 — the cycle surface in the app. It opens once the Phase 2 gate is
+confirmed.
 
 ## Open issues
 

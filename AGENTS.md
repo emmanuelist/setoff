@@ -75,9 +75,12 @@ npm run lint && npm run typecheck && npm run build                 # the app gat
 node ../../scripts/check-design.mjs                                # run from the repo root: DESIGN.md vs globals.css
 ```
 
-**Setoff (milestone 1) is live at `0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7`**, deployed in
-block 22,094,796. It is Sourcify-verified (exact match). The deployment and every mainnet
-transaction since are recorded in `docs/EVIDENCE.md`.
+**Setoff (milestone 2, both paths plus netting cycles) is live at
+`0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6`**, deployed in block 22,187,522 from commit
+`9b57f3c` (D019). Milestone 1's contract stays at `0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7`
+(block 22,094,796) as its record; the app moves to milestone 2 in Phase 3. Both are
+Sourcify-verified (exact match). Every deployment and mainnet transaction is recorded in
+`docs/EVIDENCE.md`.
 
 ## Arc facts
 
