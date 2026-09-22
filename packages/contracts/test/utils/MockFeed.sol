@@ -45,6 +45,27 @@ contract RefusingParty {
         id = abi.decode(ret, (uint256));
     }
 
+    function proposeInCycle(
+        address setoff,
+        uint256 cycleId,
+        address debtor,
+        bytes3 currency,
+        uint128 amount
+    ) external returns (uint256 id) {
+        (bool ok, bytes memory ret) = setoff.call(
+            abi.encodeWithSignature(
+                "proposeInCycle(uint256,address,bytes3,uint128,bytes32)",
+                cycleId,
+                debtor,
+                currency,
+                amount,
+                bytes32(0)
+            )
+        );
+        require(ok, "proposeInCycle failed");
+        id = abi.decode(ret, (uint256));
+    }
+
     function withdraw(address setoff) external {
         (bool ok, bytes memory ret) = setoff.call(abi.encodeWithSignature("withdraw()"));
         if (!ok) {
