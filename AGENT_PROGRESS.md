@@ -22,10 +22,15 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       verified at 1440 and a true 390 across every stage: 120 fps, no collisions, clipping
       or overflow, contrast measured. docs/RUNOFSHOW.md is scripted as a 3-minute video
       with a Herstatt cold open.
-- [ ] **Phase 1 — Milestone 1: debts priced in currency (Sep 23–27).** *Contracts done
-      2026-09-22:* 27 tests, 4 invariants, and 2 mainnet-fork tests are green; deployed at
-      `0xcbEb…3ce7`, Sourcify exact match; debt #1 paid live on mainnet (`docs/EVIDENCE.md`).
-      *Remaining:* `apps/web` and its one real flow.
+- [x] **Phase 1 — Milestone 1: debts priced in currency (done 2026-09-22, ahead of Sep 27).**
+      *Contracts:* 27 tests, 4 invariants and 2 mainnet-fork tests are green; deployed at
+      `0xcbEb…3ce7`, Sourcify exact match; debt #1 paid live on mainnet.
+      *App:* Next 16 at `apps/web`, reading contract views live (D014), with an EIP-6963 wallet
+      and one write lifecycle. Pages: debts ledger with the live fixing board, the debt slip
+      (endorse / pay / withdraw, real perforation, fixing receipt), and record a debt.
+      *Verified:* lint 0, typecheck 0, build green; rendered at 1440 and 390; the full UI
+      write path (propose → endorse → pay → withdraw) ran end to end on an Arc mainnet fork.
+      *Still to do by hand:* the same flow on mainnet with a real browser wallet.
       `packages/contracts`: propose → accept → pay-direct at a Chainlink fixing, with the
       stale-rate refusal and withdrawals. Include failure-path tests. Deploy to Arc mainnet
       and verify on Sourcify. Scaffold `apps/web` (create-next-app@latest, pin real
@@ -47,7 +52,7 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 1 — opens once the Phase 0 gate is confirmed.
+**Current phase:** 2 — opens once the Phase 1 gate is confirmed.
 
 ## Open issues
 

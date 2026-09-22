@@ -122,3 +122,22 @@ update. Anything older is refused. The grace period is short enough that a rate 
 be more than one missed heartbeat stale.
 
 **forge-std v1.16.2** is a pinned git submodule, not a vendored copy.
+
+## D014 — The app reads contract views, not event history; no Tailwind (2026-09-22)
+
+Arc's public RPC caps `eth_getLogs` at **10,000 blocks** (measured), and Arc produces about
+100,000 blocks a day. Scanning history per page load would need about 140 calls by
+submission.
+
+- **State comes from contract views** (`debtCount`, `debt`, `quote`, `fixingOf`,
+  `withdrawable`), batched through Multicall3 at `0xcA11…CA11`.
+- **One event is read:** the `Paid` receipt for a single debt, located from the debt's
+  own `closedAt` and fetched in one bounded window.
+- **Past blocks are final (deterministic finality),** so a receipt read once never
+  changes and is cached for the life of the server process.
+- **Pages render per request** (`connection()`), so every figure is live chain state,
+  never a build-time snapshot.
+
+**No Tailwind.** The design system is bespoke tokens and hand-built components, and the
+proven specimen is plain CSS. Tailwind would duplicate every token in a second system.
+Tokens live in `app/globals.css`, with CSS Modules per component.

@@ -55,7 +55,9 @@ Fill in the rest from what actually installs in Phase 1, and state the prohibiti
 | solc / `evm_version` | 0.8.37 / `prague` — pinned in `packages/contracts/foundry.toml` |
 | forge-std | v1.16.2, git submodule |
 | viem | 2.56.8 — ships `arc` (5042) in `viem/chains`; do not hand-define the chain |
-| Next.js / React / Tailwind | Pin at the `apps/web` scaffold (`create-next-app@latest`) |
+| Next.js | 16.3.5 (App Router, Turbopack) — Next 15 and older are out; read `apps/web/node_modules/next/dist/docs/` before using an API |
+| React | 19.2.8 — the hooks lint forbids setState inside effect bodies; key readings to their account instead |
+| Styling | Plain CSS: tokens in `app/globals.css`, CSS Modules per component. **No Tailwind, no component library** (D014) |
 | TypeScript | 5.x |
 
 ## Contracts: commands and the live deployment
@@ -66,6 +68,10 @@ cd packages/contracts
 ~/.local/bin/arc-forge test --network arc                         # unit, fuzz, invariants
 ARC_RPC_URL=https://rpc.mainnet.arc.io ~/.local/bin/arc-forge test --network arc   # + mainnet fork
 ~/.local/bin/arc-forge lint                                       # src/ must be zero warnings
+
+cd apps/web
+npm run lint && npm run typecheck && npm run build                 # the app gate
+node ../../scripts/check-design.mjs                                # run from the repo root: DESIGN.md vs globals.css
 ```
 
 **Setoff (milestone 1) is live at `0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7`**, deployed in
@@ -100,6 +106,10 @@ All verified on mainnet on 2026-09-21; see `docs/RESEARCH.md`.
   | JPY / USD | `0xF9Fc1C20C82d774A3787845E73E41BCbF7F38F25` |
 
   Read `decimals()` from the feed; never assume it.
+- **Never use the well-known test accounts as receivers, even on a fork.** On Arc mainnet the
+  Foundry/Hardhat mnemonic accounts (`0xf39F…2266`, `0x7099…79C8`, `0x3C44…93BC`, …) carry an
+  EIP-7702 delegation to a sweeper (`0x92e5…5274`) that forwards anything they receive. A fork
+  inherits it. Use fresh addresses (`anvil_impersonateAccount`) for end-to-end tests.
 - **Don't use:** Pyth (testnet only), StableFX (permissioned), APS privacy (not live),
   ERC-8183 (testnet only).
 - **Verification:** `forge verify-contract --verifier sourcify` (D010). The explorer API

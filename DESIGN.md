@@ -90,6 +90,7 @@ Each reference owns **one** dimension.
 | `--rule` | `#c7cac2` | Hairline dividers |
 | `--endorse` | `#4a3a92` | Rubber-stamp violet: consent, and every act you sign |
 | `--returned` | `#b8361c` | The RETURNED UNPAID stamp |
+| `--field` | `#f7f8f5` | An input: one step lighter than the ground |
 | `--tint-usd` / `--code-usd` | `#d9e6d3` / `#2d5a27` | USD safety paper / its label |
 | `--tint-eur` / `--code-eur` | `#d6e0ee` / `#274a7a` | EUR |
 | `--tint-mxn` / `--code-mxn` | `#eed8d5` / `#8a302a` | MXN |
@@ -111,6 +112,9 @@ Each reference owns **one** dimension.
 | `--line-mxn` | `#ea988d` | MXN streams |
 | `--line-brl` | `#e9c67d` | BRL streams |
 | `--line-jpy` | `#bface4` | JPY streams |
+| `--floor-lift` | `#22201c` | A floor cell under the pointer |
+| `--panel` | `#171614` | A panel raised over the floor (the wallet menu) |
+| `--returned-lit` | `#f0a08f` | Returned, refused or failed, on the floor |
 
 ### Colour laws
 
@@ -131,6 +135,7 @@ Each reference owns **one** dimension.
 --rule-total: 2px solid var(--ink)    above every total (the accountant's rule)
 --radius:     0
 --gutter:     clamp(16px, 3vw, 44px)
+--measure:    68ch
 ```
 
 ### Geometry laws
@@ -150,6 +155,8 @@ Each reference owns **one** dimension.
 | Display / labels | **Archivo**, variable `wdth` 62–125, `wght` 100–900 | Wordmark, eyebrows, stages and stamps at `wdth` 125 in wide caps; captions at 86 |
 | Figures | **Martian Mono**, variable `wdth` 75–112.5, `wght` 100–800 | Every amount, rate, ID, address and time |
 | Body | Archivo at `wdth` 100 | Sentences, tables |
+
+Tokens: `--display` (Archivo) and `--figure` (Martian Mono), both set by `next/font`.
 
 ### Type laws
 
@@ -221,7 +228,7 @@ Each reference owns **one** dimension.
   product, and it means something: those debts are live. It pauses when the stage is
   offscreen or the tab is hidden.
 - **Ambient:** buttons, nodes, slips and fixing cells respond within 180–220 ms with a
-  spring. Captions crossfade over 260 ms.
+  spring (`--spring`); things that come to rest use `--settle`. Captions crossfade over 260 ms.
 - **Deliberately absent:** parallax, scroll-jacking, and decorative loops.
 - **`prefers-reduced-motion`:** there is no autoplay and no flow. The floor renders the
   final state statically, and the scrubber still works, redrawing on demand.
@@ -274,6 +281,8 @@ Measured WCAG 2.1 contrast, 2026-09-22:
 | returned on ground | 5.11:1 |
 | code on tint | 5.69–6.71:1 |
 | currency lines on ink | 7.67–10.50:1 |
+| returned-lit on panel / on ink | 8.72:1 / 8.29:1 |
+| ink on field (inputs) | 16.12:1 |
 
 - **The canvas** is `role="img"` with a full text alternative. The proof ledger is its
   complete accessible equivalent.
