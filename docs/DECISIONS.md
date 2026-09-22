@@ -105,3 +105,20 @@ better.
 **Why:** v1 of the direction obeyed every rule and read as tables around a number. v2
 broke three of them (it added a dark stage, shadows on physical slips, and a looping-free
 but heavy authored animation) and made the clearing visible.
+
+## D013 — Toolchain: Arc Foundry, solc 0.8.37, `prague`, a 1-hour fixing grace (2026-09-22)
+
+**Arc Foundry** v0.8.0-1 (Foundry 1.7.1-dev) runs every test with `--network arc`, so the
+suite executes under Arc's native-USDC rules rather than plain-ETH semantics. v0.8.0-2
+differs from it only in CI and Docker files, and has no Apple Silicon build. The binary's
+checksum was verified before install.
+
+**solc 0.8.37** (latest stable) is pinned, with `evm_version = "prague"`. Arc targets
+Osaka; Prague bytecode is a strict subset, so no opcode depends on anything newer than
+what every Arc node runs.
+
+**`maxFixingAge` = 90,000 s:** Chainlink's 24 h FX heartbeat plus 1 h of grace for a late
+update. Anything older is refused. The grace period is short enough that a rate can never
+be more than one missed heartbeat stale.
+
+**forge-std v1.16.2** is a pinned git submodule, not a vendored copy.

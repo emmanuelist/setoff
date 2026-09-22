@@ -51,11 +51,26 @@ Fill in the rest from what actually installs in Phase 1, and state the prohibiti
 | | |
 | --- | --- |
 | Node | 26.7.0 locally (≥ 22 required) |
-| Foundry | 1.4.4-stable |
+| Arc Foundry | v0.8.0-1 (Foundry 1.7.1-dev), at `~/.local/bin/arc-forge`, `arc-cast`, `arc-anvil` — **use these, not stock `forge`** (D013) |
+| solc / `evm_version` | 0.8.37 / `prague` — pinned in `packages/contracts/foundry.toml` |
+| forge-std | v1.16.2, git submodule |
 | viem | 2.56.8 — ships `arc` (5042) in `viem/chains`; do not hand-define the chain |
-| Solidity / `evm_version` | **Unpinned — open issue 4.** Arc targets Osaka; verify against Arc's deploy tutorial before the first mainnet deploy |
-| Next.js / React / Tailwind | Pin at Phase 1 scaffold (`create-next-app@latest`) |
+| Next.js / React / Tailwind | Pin at the `apps/web` scaffold (`create-next-app@latest`) |
 | TypeScript | 5.x |
+
+## Contracts: commands and the live deployment
+
+```bash
+cd packages/contracts
+~/.local/bin/arc-forge build
+~/.local/bin/arc-forge test --network arc                         # unit, fuzz, invariants
+ARC_RPC_URL=https://rpc.mainnet.arc.io ~/.local/bin/arc-forge test --network arc   # + mainnet fork
+~/.local/bin/arc-forge lint                                       # src/ must be zero warnings
+```
+
+**Setoff (milestone 1) is live at `0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7`**, deployed in
+block 22,094,796. It is Sourcify-verified (exact match). The deployment and every mainnet
+transaction since are recorded in `docs/EVIDENCE.md`.
 
 ## Arc facts
 

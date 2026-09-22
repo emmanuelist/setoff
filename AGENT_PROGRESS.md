@@ -22,7 +22,10 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       verified at 1440 and a true 390 across every stage: 120 fps, no collisions, clipping
       or overflow, contrast measured. docs/RUNOFSHOW.md is scripted as a 3-minute video
       with a Herstatt cold open.
-- [ ] **Phase 1 — Milestone 1: debts priced in currency (Sep 23–27).**
+- [ ] **Phase 1 — Milestone 1: debts priced in currency (Sep 23–27).** *Contracts done
+      2026-09-22:* 27 tests, 4 invariants, and 2 mainnet-fork tests are green; deployed at
+      `0xcbEb…3ce7`, Sourcify exact match; debt #1 paid live on mainnet (`docs/EVIDENCE.md`).
+      *Remaining:* `apps/web` and its one real flow.
       `packages/contracts`: propose → accept → pay-direct at a Chainlink fixing, with the
       stale-rate refusal and withdrawals. Include failure-path tests. Deploy to Arc mainnet
       and verify on Sourcify. Scaffold `apps/web` (create-next-app@latest, pin real
@@ -56,10 +59,10 @@ Track here until the GitHub repo exists, then move them to GitHub Issues.
 2. **Rounding (Phase 2).** Conversions must never let credits exceed debits. Round debits
    up and credits down, and decide where the dust goes. It is bounded and must be written
    down.
-3. **Stale-feed grace period (Phase 1).** The heartbeat is 86,400 s; pick the grace
-   period and state it in the UI.
-4. **evm_version and solc (Phase 1).** Arc targets Osaka. Pin a solc and `evm_version`
-   verified against Arc's deploy tutorial before the first mainnet deploy.
+3. ~~**Stale-feed grace period.**~~ Resolved, D013: 1 h, so `maxFixingAge` is 90,000 s.
+   The UI must state it.
+4. ~~**evm_version and solc.**~~ Resolved, D013: solc 0.8.37 and `prague`, tested with Arc
+   Foundry `--network arc`.
 5. **Memo contract (Phase 2, optional).** Tag funding and settlement legs through Arc's
    Memo contract `0x5294…e505` for reconciliation. Decide on merit, and don't bolt it on.
 6. **Wallet UX for the demo (Phase 3).** Import the four party keys into a browser wallet
