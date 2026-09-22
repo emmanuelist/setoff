@@ -61,9 +61,27 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       0.113 USDC. Sourcify exact match on creation and runtime. The app still reads
       milestone 1's contract; it moves in Phase 3.
       **CHECKPOINT Sep 30:** met. The invariant suite is green, so milestone 2 stays in.
-- [ ] **Phase 3 — The signature surface (Oct 1–3).** The cycle statement: gross owed per
-      currency collapsing to the net actually moved, with every figure linked to its
-      transaction or read.
+- [x] **Phase 3 — The signature surface (built 2026-09-22, ahead of Oct 1–3; awaiting the
+      gate).** The cycle statement: gross owed per currency collapsing to the net actually
+      moved, with every figure linked to its transaction or read.
+      *App on milestone 2:* the app reads `0x8A78…80d6` (D019).
+      - Pages: `/cycles` (list), `/cycles/[id]` (the statement, schedule timer, next act, the
+        cycle's debts and fixing, and its on-chain trail), `/cycles/new` (open a cycle).
+      - The home page carries the latest cycle; recording a debt offers "Where it clears";
+        debt pages know netted debts.
+      - Fix, fund, settle and void are each offered only when the contract would accept them.
+      *On mainnet:*
+      - Specimen debts #1 (paid) and #2 (endorsed) were recreated.
+      - **Cycle #1** ran end to end: 4.87182906 USDC owed across five currencies,
+        0.2669278 USDC moved (94.5 % set off). Every transaction is in `docs/EVIDENCE.md`.
+      - The drills are committed and rehearsed on a fork first: `scripts/mainnet/specimen.sh`,
+        `script/OpenCycle.s.sol`, `script/ClearCycle.s.sol`.
+      *Refusal room:* 17 of 17 attempts match their rule, five of them against the real
+      settled cycle.
+      *Verified:* lint 0, typecheck 0, build green, `check-design` agrees, the impeccable
+      detector is clean, rendered at 1440 and 390.
+      *Not shown yet:* a cycle in its Open, Fixed or Void state on mainnet. Phase 4 runs the
+      void.
 - [ ] **Phase 4 — The reversal (Oct 4).** A real mainnet cycle voided by an unfunded
       party. Every deposit refunded, visible on-chain and in the app.
 - [ ] **Phase 5 — Proof surface (Oct 5–6).** README as proof surface, deployed app, demo
@@ -71,8 +89,8 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 3 — the cycle surface in the app. It opens once the Phase 2 gate is
-confirmed.
+**Current phase:** 3 — built, and waiting at its gate. Phase 4 (a real voided cycle)
+follows.
 
 ## Open issues
 

@@ -164,10 +164,11 @@ The room is a cool grey powder-coated wall (`--wall`) with instrument plates set
 
 The system is restrained. There is no dark mode, no decorative chart, no illustration. Depth comes from how a physical object sits in a wall: raised plates, recessed wells, keys with a skirt. Every figure on screen is read from the chain at request time.
 
-The netting-cycle floor (the v3 "clearing room" particle view, where debts annihilate until only the net survives) was not built. It is deferred to milestone 2, when a real cycle gives it data. Nothing in this file describes it, and the clearing-room world it came from is retired.
+Netting cycles are drawn as the cycle statement (below), rendered from a real mainnet cycle. The v3 "clearing room" particle floor was never built, and the clearing-room world it came from is retired.
 
 **Key Characteristics:**
 - One master clock (chain time) and five slaved fixing dials, live on every visit.
+- The cycle statement: gross owed in several currencies collapsing to the net that moves.
 - Debts are cards; card colour means currency and nothing else.
 - Two ribbon colours with fixed meanings: violet signs, red refuses.
 - Skeuomorphic materials (steel, enamel, glass, card stock) held to minimal composition.
@@ -288,15 +289,43 @@ Physical keys that press.
 - **Header:** optional engraved legend at left and a small graphite aside at right.
 - **Padding:** 20 to 24px; hero plates up to 44px.
 
-### Debt card (signature component)
-The cycle statement's first form: a debt as a card the chain punches.
+### Cycle statement (signature component)
+The claim, drawn from a real cycle: gross owed in several currencies, set off at one fixing, collapsing to the net that moves.
+- **Headline figure:** Martian Mono at up to 96px (60px compact). NumberFlow rolls it from the gross to the net over 1.4 s once the statement is 40 % in view. Its unit sits on the figure's baseline, in graphite, and says what the figure is at each moment: "USDC owed, gross, in N currencies", then "USDC moves". No legend is stacked above it. Beside it, in one line: owed · moves · % set off, and whether it is priced at the cycle's fixing or previewed at today's.
+- **Set-off beams:** one row per party in a well, on a zero line.
+  - Debits grow left of the zero line and credits right, each drawn as segments of currency stock.
+  - At set-off the gross ghosts back to 50 % and the net grows out from zero as an ink bar.
+  - The ink bar is the money that stops being pesos or yen and becomes the USDC that moves.
+  - Direction is carried by side, sign and the word credit, debit or flat, never by colour. A net debtor shows funded or unfunded once the cycle is fixed.
+- **Currency strip** (page version): a stock chip per currency, with the total amount and its USDC at the fixing. The compact version carries a one-line key instead (each currency's swatch and code, and the ink bar as "net, in USDC"), so beam colour is never the only carrier of currency.
+- **Replay:** a plain key reruns the set-off. With reduced motion, the net shows at once and there is no replay.
+- **Accessibility:** a visually hidden sentence and table carry every figure: each party's legs by currency with their USDC, totals, net, and funding once fixed. The hidden wrapper is a div, because a table ignores the 1 px box and would overflow a phone.
+- **Where it appears:** the cycle page, and the home page's "Latest cycle" plate (compact).
+- **Its fixing** (cycle page): the home page's fixing board in a frozen mode, a full-size dial per currency in the cycle. The needle is held at the rate's age at the fixing, the header reads "20.0 h at fix", and the detail reads "as fixed". The on-chain trail (opened, fixed, each funding, settled or voided) sits in the right column as a vertical record, each row linked to its transaction.
+
+### Cycle timer
+The cycle's schedule on the chain's clock.
+- A sunk track runs from the first enrolment to the funding deadline, with ink ticks and labels at the cutoff and the deadline, and a violet tick at the fixing (a signed act).
+- A small raised shuttle sits at chain time, or at the close once settled or voided, and slides a second at a time.
+- A stage word and one line say what the cycle is waiting for, with the time left in `span` form.
+
+### Cycle marks
+From the same set as a debt's.
+- Settled: perforated CLEARED.
+- Void: a red "Returned" impression.
+- Open and fixed: engraved legends, "Enrolling" and "Fixed".
+- A netted debt is perforated CLEARED too.
+
+### Debt card
+A debt as a card the chain punches.
 - Currency-tinted stock with paper grain, `--r-card`.
 - Header: the clear band (original machine glyphs with the zero-padded debt ID) and the state impression.
 - Face: currency code in its code colour, then the amount in the amount style. Struck through and graphite when cancelled.
 - Price line: paid USDC at the fixing, or a live quote, or a red "Refused" impression when the fixing is stale.
-- Punch fields: Proposed, Endorsed, Paid (or Cancelled, struck), each a dashed row. A field filled while the page is open prints in with a quick spring (scale 1.35 to 1, blur 3px to 0). Fields already printed stay still.
+- Punch fields: Proposed, Endorsed, then Paid, Netted (a cycle debt) or Cancelled (struck), each a dashed row. A field filled while the page is open prints in with a quick spring (scale 1.35 to 1, blur 3px to 0). Fields already printed stay still.
 - Foot: the clear band again, with the paid amount in micro-USDC once there is one.
-- Paid: perforated PAID; if paid while watching, the perforator punches it column by column first.
+- Paid: perforated PAID; netted: perforated CLEARED. If it closes while you watch, the perforator punches it column by column first.
+- A cycle debt is priced by its cycle: its value at the cycle's fixing once fixed, and before that a note that it clears there.
 
 ### Fixing dial
 A 240-degree gauge from 8 o'clock to 4. The scale runs to 1.2 times the contract's refusal limit (read live); past the limit is a 7px red band with a red limit tick and numeral. The needle is ink, or red when refused, and sweeps in on a shared spring at load. The currency code sits below the hub in its code colour, the only currency colour on the face. A well under the face shows the rate in the figure face; NumberFlow rolls it. The round number opens an ink tooltip.
@@ -305,7 +334,7 @@ A 240-degree gauge from 8 o'clock to 4. The scale runs to 1.2 times the contract
 A station clock on enamel under glass, steel bezel, ink hands, a stop-to-go seconds hand that waits at 12 for the minute impulse. Driven by block timestamps, with the block number rolling below it. The masthead carries a small readout (legend plus a well with the block number) on every page from md up.
 
 ### Navigation
-A three-position selector switch in a well. The active position is a raised cap that slides between detents with a spring (`layoutId`). Labels 13px semibold; inactive graphite, active ink.
+A four-position selector switch in a well: Debts, Cycles, Record a debt, Refusal room (Record and Refusals on a phone). The active position is a raised cap that slides between detents with a spring (`layoutId`). Labels 13px semibold; inactive graphite, active ink.
 
 ### Inputs / Fields
 - **Style:** wells, figure face at 15px, 48px tall (the amount field 64px at 26px).
@@ -317,7 +346,7 @@ A three-position selector switch in a well. The active position is a raised cap 
 One shared well line for every write: checking, signing, including (spinner, graphite), done (violet print of the act, block, hash), failed (red "REFUSED" for a revert, graphite "NOT SENT" otherwise). A flow never stays in flight.
 
 ### Motion
-Springs settle without overshoot (`--spring`); presses use `--settle`. Motion carries meaning only: needles sweep to their age, punch fields print, the perforator punches, the nav cap slides, figures roll. `prefers-reduced-motion` zeroes CSS transitions, and every Motion component checks it. `--out-expo` is defined but unused.
+Springs settle without overshoot (`--spring`); presses use `--settle`. Motion carries meaning only: needles sweep to their age, the statement sets off, the timer's shuttle follows chain time, punch fields print, the perforator punches, the nav cap slides, figures roll. `prefers-reduced-motion` zeroes CSS transitions, and every Motion component checks it. `--out-expo` is defined but unused.
 
 ## Do's and Don'ts
 

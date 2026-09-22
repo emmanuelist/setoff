@@ -170,9 +170,10 @@ All verified on mainnet on 2026-09-21; see `docs/RESEARCH.md`.
   strand a flow in a permanent in-flight state.
 - **Money at the UI boundary** is a `bigint` in native units (18 decimals) or in the
   currency's minor units. Format for display only. A float never touches money.
-- One **signature component** carries the thesis: the fixing gauge (a rate's age against
-  the contract's refusal limit). Milestone 2's cycle statement joins it, and the video
-  points at both.
+- One **signature component** carries the thesis: the cycle statement (gross owed in several
+  currencies collapsing to the net that moves), drawn from a real mainnet cycle. The fixing
+  gauge (a rate's age against the contract's refusal limit) supports it. The video points at
+  both.
 
 ## Verification before any gate
 
