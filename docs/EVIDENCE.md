@@ -44,6 +44,21 @@ live fixing.
   is 0.
 - **A full debt lifecycle costs about 0.0064 USDC in gas.**
 
+**Debt #2, the live specimen:** Party C bills Party D **BRL 5.00**, and D endorses it. It is
+left unpaid on purpose: the refusal room tests against it.
+
+| Step | Tx | Block | Gas | Cost (USDC) |
+| --- | --- | --- | --- | --- |
+| Propose (C, the creditor) | [`0xa16a…d213`](https://explorer.arc.io/tx/0xa16a82321207f1a37abb8c6da487cd6f1085ad15a1ec56dd176a6c311953d213) | 22,150,855 | 121,995 | 0.002707 |
+| Accept (D endorses) | [`0x3fa8…3a6a`](https://explorer.arc.io/tx/0x3fa866aebe7924dc18e1aa8da41987b9c4b8523b785f64a821545d8587ea3a6a) | 22,150,866 | 28,286 | 0.000631 |
+
+**Refusal room, first full run** (2026-09-22, blocks 22,151,605–22,151,622): 12 of 12
+attempts matched their rule.
+
+- **Refused, each by name:** `StaleFixing`, `InvalidAnswer`, `Underpaid`, `NotDebtor` (×2),
+  `WrongState` (×2), `NothingToWithdraw`, `InvalidDebtor`, `UnsupportedCurrency`.
+- **Cleared:** paying the honest amount, and recording an honest debt.
+
 ## Measured facts
 
 | Fact | Value | Source |

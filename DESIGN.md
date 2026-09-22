@@ -246,6 +246,7 @@ None. The only image is the clearing itself, rendered from a real mainnet cycle.
 | Debts | statement | A ledger of slips |
 | Fixings | statement | The history of reads, with ages and refusals |
 | Landing | floor + statement | The latest real clearing on the floor, then how it works |
+| Refusal room | floor + statement | "Try to break it." and the "Setoff can't" list on the floor; twelve attempts with REFUSED stamps and error names; a dark structured-result panel with a block-by-block log (D015) |
 
 **Phone (390):**
 

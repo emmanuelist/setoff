@@ -76,6 +76,12 @@ On screen: black, then the Setoff wordmark and the claim, set in the product's o
 - Click through to the explorer: the fixing event (rates, round IDs, update times), the
   settlement transaction, and the void transaction.
 - Show the contract verified on Sourcify.
+- **Open the refusal room and press "Run every attempt"** (about 15 s). Twelve attempts hit
+  the live contract; ten come back REFUSED by name, and the honest two clear. Select
+  `StaleFixing` to show the structured result: the real debt, the real debtor, and time
+  openly moved 26 h forward.
+  > "Every refusal you just watched came from the live contract. Nothing is simulated
+  > except the one thing we say we moved: the clock."
   > "USDC is Arc's native currency. Deposits are plain payments, with no token approvals
   > anywhere in the protocol. Finality is instant, so a cleared cycle is final the moment
   > it's included."

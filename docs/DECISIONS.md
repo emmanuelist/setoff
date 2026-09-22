@@ -141,3 +141,23 @@ submission.
 **No Tailwind.** The design system is bespoke tokens and hand-built components, and the
 proven specimen is plain CSS. Tailwind would duplicate every token in a second system.
 Tokens live in `app/globals.css`, with CSS Modules per component.
+
+## D015 — A refusal room, run against the live contract (2026-09-22)
+
+The winning projects share one pattern: the visitor makes the *live* system refuse invalid
+actions.
+
+- **Clasp** has a Security Lab: "Attack the wallet. Watch it win."
+- **Morrow** has a Proof Room, whose replay is "a read-only `eth_call`".
+- **Meritr** makes the live precompile accept a real proof and refuse a forged one.
+
+Setoff's `/refusals` runs twelve attempts as read-only `eth_call`s against the deployed
+contract at the latest block, and decodes each revert with the contract's own ABI.
+
+- **Nothing is mocked.** Every result is the contract's own answer.
+- **Where an attempt needs the world to be different,** the override is shown on the
+  attempt itself. There are three: time moved 26 h forward (a stale fixing), and a 100 USDC
+  balance for two callers (so the node can't refuse the call before the contract does).
+- **The attempts use real debts:** №0001 (paid) and №0002 (endorsed).
+- **A call that never reaches the contract is shown as a failure** on its own row, never
+  as a refusal, and running the next attempt never hides it.

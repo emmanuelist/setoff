@@ -31,6 +31,8 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       *Verified:* lint 0, typecheck 0, build green; rendered at 1440 and 390; the full UI
       write path (propose → endorse → pay → withdraw) ran end to end on an Arc mainnet fork.
       *Still to do by hand:* the same flow on mainnet with a real browser wallet.
+      *Added:* the refusal room (`/refusals`, D015). Twelve read-only attempts against the
+      live contract, 12 of 12 matching their rule.
       `packages/contracts`: propose → accept → pay-direct at a Chainlink fixing, with the
       stale-rate refusal and withdrawals. Include failure-path tests. Deploy to Arc mainnet
       and verify on Sourcify. Scaffold `apps/web` (create-next-app@latest, pin real
