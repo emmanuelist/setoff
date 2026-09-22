@@ -95,3 +95,13 @@ lists chain 5042 as supported, so we use `forge verify-contract --verifier sourc
 The four party wallets belong to the builder. The README and the video say so plainly.
 Every contract function is permissionless, so a reviewer can open their own debts and
 cycles. The amounts are small and real rather than large and fake.
+
+## D012 — Skills and templates are inputs, not limits (2026-09-22)
+
+The owner directed that the UI must not be held back by the design skills or the rig
+templates, which may be outdated. Their rules are kept only while they make the product
+better.
+
+**Why:** v1 of the direction obeyed every rule and read as tables around a number. v2
+broke three of them (it added a dark stage, shadows on physical slips, and a looping-free
+but heavy authored animation) and made the clearing visible.
