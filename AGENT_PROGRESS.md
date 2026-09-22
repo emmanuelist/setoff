@@ -15,10 +15,13 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 
 - [x] **Foundation — 2026-09-21.** Research closed; name and claim chosen; rig scaffolded;
       PRODUCT.md, DECISIONS.md and this plan written; mainnet wallets funded.
-- [ ] **Phase 0 — Direction (Sep 22).** Run `/premium-product-design`. Record the world,
-      the state tokens and the signature component in DESIGN.md. Draft
-      docs/RUNOFSHOW.md as a **~3-minute video**, since there is no live pitch. No feature
-      code.
+- [x] **Phase 0 — Direction (Sep 22).** World: *the clearing room*. v3 floor: money as
+      light, and a clearing you can scrub through owed → fixed → novated → set off, where
+      mutual debts annihilate into exactly the net. Party focus cards; a statement below.
+      Recorded in DESIGN.md (v3, D012). Specimen `internal/design/specimen-v3.html`,
+      verified at 1440 and a true 390 across every stage: 120 fps, no collisions, clipping
+      or overflow, contrast measured. docs/RUNOFSHOW.md is scripted as a 3-minute video
+      with a Herstatt cold open.
 - [ ] **Phase 1 — Milestone 1: debts priced in currency (Sep 23–27).**
       `packages/contracts`: propose → accept → pay-direct at a Chainlink fixing, with the
       stale-rate refusal and withdrawals. Include failure-path tests. Deploy to Arc mainnet
@@ -41,7 +44,7 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 0
+**Current phase:** 1 — opens once the Phase 0 gate is confirmed.
 
 ## Open issues
 
