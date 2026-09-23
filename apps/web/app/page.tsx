@@ -196,6 +196,7 @@ async function Ledger({ r }: { r: Reads }) {
   const paidDirect = paid.reduce((sum, d) => { const p = priced.get(d.id); return p?.kind === "paid" ? sum + p.usdc : sum; }, 0n);
   return (
     <Plate
+      id="ledger"
       legend="Debts"
       aside={
         <span>
@@ -216,7 +217,7 @@ export default async function Home() {
   return (
     <main className="px-[var(--gutter)] pt-[var(--seam)]">
       <div className="bento">
-        <section className="plate col-span-12 flex flex-col gap-7 p-6 sm:p-8 lg:col-span-6">
+        <section id="claim" className="plate col-span-12 flex flex-col gap-7 p-6 sm:p-8 lg:col-span-6">
           <div className="grid gap-5">
             <h1 className="max-w-[15ch] text-display font-bold tracking-[-0.022em] [font-variation-settings:'wdth'_108]">
               Debts in five currencies clear at one <span className="whitespace-nowrap">on-chain</span> fixing.
@@ -227,7 +228,7 @@ export default async function Home() {
           </div>
 
           {/* Labels wrap at narrow columns; subgrid keeps every figure on one baseline. */}
-          <dl className="mt-auto grid grid-cols-2 gap-x-6 gap-y-6 border-y border-rule py-5 sm:grid-cols-4 sm:grid-rows-[auto_auto] sm:gap-y-2">
+          <dl id="tally" className="mt-auto grid grid-cols-2 gap-x-6 gap-y-6 border-y border-rule py-5 sm:grid-cols-4 sm:grid-rows-[auto_auto] sm:gap-y-2">
             <Suspense fallback={["Debts settled", "Gross owed", "USDC moved", "Set off"].map((k) => (
               <div key={k} className="grid gap-1 sm:row-span-2 sm:grid-rows-subgrid" aria-busy="true">
                 <dt className="legend">{k}</dt>

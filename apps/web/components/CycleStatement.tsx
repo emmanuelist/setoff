@@ -68,7 +68,7 @@ export function CycleStatement({
   const replay = () => { setSetOff(false); setRun((n) => n + 1); };
 
   return (
-    <div ref={root} className="grid gap-7">
+    <div ref={root} id="statement" className="grid gap-7">
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         {/* The unit sits on the figure's baseline and says what the figure is at each moment. */}
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -94,11 +94,11 @@ export function CycleStatement({
         <div className="grid justify-items-start gap-2 text-small text-graphite sm:justify-items-end sm:text-right">
           <span><span className="fig text-ink">{formatUsdc(gross, 4)}</span> owed · <span className="fig text-ink">{formatUsdc(netMoved, 4)}</span> {outcome === "void" ? "never moved" : outcome === "settled" ? "moved" : "moves"} · <span className="fig text-ink">{setOffPct}%</span> set off</span>
           <span>{outcome === "void" ? "Voided: a net debtor never funded, so every deposit was refunded and nothing moved." : basis === "fixing" ? "Priced at the cycle's one fixing." : "At today's fixings, if it were fixed now. Nothing is priced until the fixing."}</span>
-          {!reduce && <button type="button" className="key key-sm" onClick={replay} disabled={!setOff}><RotateCcw aria-hidden="true" />Replay the set-off</button>}
+          {!reduce && <button id="replay" type="button" className="key key-sm" onClick={replay} disabled={!setOff}><RotateCcw aria-hidden="true" />Replay the set-off</button>}
         </div>
       </div>
 
-      <div className="well grid gap-1 p-3 sm:p-4" aria-hidden="true">
+      <div id="beams" className="well grid gap-1 p-3 sm:p-4" aria-hidden="true">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-x-4 pb-1 text-label sm:grid-cols-[108px_minmax(0,1fr)_132px]">
           <span className="hidden sm:block" />
           <span className="flex justify-between"><span className="legend">Owes</span><span className="legend">Is owed</span></span>

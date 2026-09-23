@@ -65,7 +65,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
       <section className="plate col-span-12 flex flex-col justify-between gap-8 p-6 sm:p-9 lg:col-span-7">
         {head}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-          <button className="key key-ink" onClick={runAll} disabled={running !== null}>
+          <button id="run-attempts" className="key key-ink" onClick={runAll} disabled={running !== null}>
             {running ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Play aria-hidden="true" />}
             {running ? "Running…" : "Run every attempt"}
           </button>

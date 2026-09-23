@@ -12,7 +12,7 @@ const hhmm = (ts: number) => utc(ts).split(" ").slice(3, 5).join(" ");
 /** One gauge per currency, all read in the same request against the contract's live refusal limit. */
 export function FixingBoard({ reads, now, maxAge, frozen = false, lead }: { reads: FixingRead[]; now: number; maxAge: number; frozen?: boolean; lead?: React.ReactNode }) {
   return (
-    <div className="col-span-12 grid grid-cols-2 gap-[var(--seam)] sm:grid-cols-3 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
+    <div id="fixings" className="col-span-12 grid grid-cols-2 gap-[var(--seam)] sm:grid-cols-3 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
       {lead}
       {reads.map((r) => <FixingDial key={r.currency} read={r} now={now} maxAge={maxAge} frozen={frozen} />)}
     </div>
