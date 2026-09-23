@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/cover.png" alt="Setoff — debts in five currencies clearing at one on-chain fixing" width="100%" />
+<img src="assets/cover.png" alt="Setoff: debts in five currencies clearing at one on-chain fixing" width="100%" />
 
 [![CI](https://github.com/emmanuelist/setoff/actions/workflows/ci.yml/badge.svg)](https://github.com/emmanuelist/setoff/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -13,11 +13,11 @@ Four businesses owing each other in USD, EUR, MXN, BRL and JPY normally make fou
 buy currency four times. Netting them off-chain is easy; the hard part is that nobody will act
 on a net they cannot check, and no party will pay first. Setoff puts the whole thing on Arc:
 every debt is endorsed by the party who owes it, priced **once** at one Chainlink fixing that is
-stored with its round ID, and settled in a single transaction — or voided, with every deposit
-refunded, if even one party fails to fund.
+stored with its round ID, and settled in a single transaction. If even one party fails to fund,
+the cycle is voided and every deposit comes back.
 
 This cannot be ported by swapping an oracle. It settles in the **native currency of the chain**,
-which on Arc *is* USDC — no ERC-20 approvals, no wrapper, no settlement asset to choose, and gas
+which on Arc *is* USDC. No ERC-20 approvals, no wrapper, no settlement asset to choose, and gas
 paid in the same unit as the debt. Move it elsewhere and "pay the net in the money the chain is
 denominated in" stops being a sentence that means anything.
 
@@ -33,34 +33,34 @@ _Reading Arc mainnet live. Every figure on that page is a contract read, an even
 
 [![Watch the demo](assets/cover.png)](https://youtu.be/4KKoGLYV9E0)
 
-**[▶ Watch on YouTube — 1:41](https://youtu.be/4KKoGLYV9E0)**
+**[▶ Watch on YouTube, 1:41](https://youtu.be/4KKoGLYV9E0)**
 
 Filmed against the deployed app reading Arc mainnet, not a mockup and not a reconstruction.
 It opens on Herstatt in 1974, shows a real cycle of five debts in five currencies setting off
 to a single net at one Chainlink fixing, then shows a second cycle being voided because one
-party never funded — with the funded party's deposit coming back in full. It closes on the
+party never funded, with the funded party's deposit coming back in full. It closes on the
 17 refusals, run live against the contract.
 
 ---
 
-## Proof — nothing here is a mockup
+## Proof: nothing here is a mockup
 
 No demo mode, no seeded database, no fixtures. There is no backend and no database at all: the
 chain is the only store, and every figure in the UI is a contract read, an event, or a Chainlink
 answer. Click any of it.
 
-**The app.** <https://setoff-omega.vercel.app> — no login, nothing seeded, reading Arc mainnet at
+**The app.** <https://setoff-omega.vercel.app>. No login, nothing seeded, reading Arc mainnet at
 request time.
 
 **The contract.** [`0x8A78…80d6`](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)
 on Arc mainnet, block 22,187,522. Sourcify **exact match**. No owner, no admin key, no pause over
 balances, and every payout is a withdrawal.
 
-**A cycle that settled.** [Cycle #1](https://explorer.arc.io/tx/0x6f840be9a2501cb80d4223ca7690577b987522c1bf5b7513a418c45f0d0ba10d) — five debts in five
+**A cycle that settled.** [Cycle #1](https://explorer.arc.io/tx/0x6f840be9a2501cb80d4223ca7690577b987522c1bf5b7513a418c45f0d0ba10d). Five debts in five
 currencies, **4.8718 USDC owed gross, 0.2669 USDC moved. 94.5 % set off**, every debt netted in
 one transaction.
 
-**A cycle that did not.** Cycle #3 — two net debtors, one funded, one never did. At the deadline
+**A cycle that did not.** Cycle #3 had two net debtors; one funded, one never did. At the deadline
 [anyone could void it](https://explorer.arc.io/tx/0x5ec942bfc6c3f551fed264e1477c9b11a098f233708de501242d15564d360e3b),
 and the funded party's **0.4279625 USDC came back to the wei**. Its balance fell by exactly its
 four transactions' gas, and all three debts returned to the direct path still endorsed. That is
@@ -71,7 +71,7 @@ the "or none does" half of the claim, on-chain rather than in a test.
 (also Sourcify exact match, kept as its own record): MXN 10.00 → 0.5804588 USDC at that day's
 fixing.
 
-**The refusal room.** 17 attempts run against the live contract as read-only calls — stale rates,
+**The refusal room.** 17 attempts run against the live contract as read-only calls: stale rates,
 underpayment, paying someone else's debt, settling a cycle twice, voiding one that already
 settled. 15 must be refused *by name*, and 2 honest controls must clear. The contract answers in
 its own words, decoded from its revert data: `StaleFixing`, `Underpaid`, `NotDebtor`,
@@ -84,16 +84,16 @@ Every mainnet transaction, with gas and receipts, is in [`docs/EVIDENCE.md`](doc
 ## How it works
 
 A debt is recorded by its **creditor**, in the currency it was invoiced in. It counts for nothing
-until the **debtor endorses** it — neither side can invent a debt the other did not accept. From
+until the **debtor endorses** it, so neither side can invent a debt the other did not accept. From
 there it takes one of two paths.
 
 **On its own.** The debtor pays in native USDC at today's fixing: the rate the Chainlink feed
 *last published*, never a live quote. The answer, round ID and update time are stored and emitted
-with the payment. A rate older than `maxFixingAge` (90,000 s — the 24 h FX heartbeat plus an
+with the payment. A rate older than `maxFixingAge` (90,000 s, the 24 h FX heartbeat plus an
 hour of grace) is refused outright. The creditor then withdraws.
 
 **In a cycle, against everything else.** Debts enrol until a cutoff. At the cutoff, **one Chainlink
-read per currency** prices every debt in the cycle — that single published rate *is* the fixing.
+read per currency** prices every debt in the cycle, and that single published rate *is* the fixing.
 Each party's debts are set off against what it is owed, leaving only its net. Only net debtors
 fund, once, before the deadline. If all of them do, one transaction credits every net creditor and
 nets every debt. If even one does not, the cycle is voided and **every deposit is refunded in
@@ -106,7 +106,7 @@ Three properties do the work, and each is an invariant before it is a function:
 - **No partial settlement.** A cycle is settled or void. There is no state where some parties paid
   and others did not.
 - **Nothing is pushed.** Payouts are withdrawals, because on Arc a native transfer can revert even
-  with sufficient balance — a blocklisted account must only ever block itself.
+  with sufficient balance, so a blocklisted account must only ever block itself.
 
 Cycles are size-capped (16 debts, 8 parties) so the fixing and settlement fit in one block.
 
@@ -144,7 +144,7 @@ Four fork tests against mainnet state are skipped unless `ARC_RPC_URL` is set:
 ARC_RPC_URL=https://rpc.mainnet.arc.io arc-forge test --network arc
 ```
 
-CI runs the app gate — lint at zero warnings, typecheck, build, and a check that `DESIGN.md`
+CI runs the app gate: lint at zero warnings, typecheck, build, and a check that `DESIGN.md`
 matches the shipped stylesheet. The contract suite runs locally, because Arc Foundry is a
 checksum-verified binary with no published installer; its results are quoted above rather than
 claimed by a badge.
@@ -153,7 +153,7 @@ claimed by a badge.
 
 ## Worth taking further
 
-Netting is not a new idea — it is how CLS settles FX and how every clearing house works. What
+Netting is not a new idea. It is how CLS settles FX and how every clearing house works. What
 has not existed is a version where the parties can check the net themselves, and where nobody
 has to go first. That needs three things at once: one agreed price, atomic settlement, and no
 privileged operator. Setoff is a small working instance of exactly that.
@@ -167,7 +167,7 @@ thousands. No audit. Those are the boundaries of a two-week build, not of the id
 - **Local-currency payout.** Creditors are paid USDC at the fixing today. StableFX and
   local-currency stablecoins (MXNB, BRLA, JPYC) are coming to Arc; when they are permissionless,
   the settlement leg moves from "USDC at the fixing" to "the creditor's own currency" **without
-  changing the clearing logic** — the netting already happens in a common unit.
+  changing the clearing logic**, because the netting already happens in a common unit.
 - **Counterparties who are not already on-chain.** The clearing is sound; the onboarding is the
   product problem. A treasurer will not manage four wallets, and the enrolment step is where
   that has to be solved.
@@ -181,7 +181,7 @@ settlement design would not: native-USDC payments with no approvals and no allow
 payout model shaped by the fact that an Arc transfer can revert on a live account, and finality
 that makes "either every party settles or none does" enforceable rather than probabilistic. On a
 chain where USDC is an ERC-20 with probabilistic finality, this needs approvals and confirmation
-delays — a different, weaker product.
+delays, which is a different and weaker product.
 
 ---
 
@@ -216,7 +216,7 @@ cp .env.example .env     # optional: only to point at a fork
 npm run dev
 ```
 
-Contracts, with Arc Foundry — `arc-forge`, **not** stock `forge`, so the suite runs under
+Contracts, with Arc Foundry. Use `arc-forge`, **not** stock `forge`, so the suite runs under
 Arc's native-USDC rules rather than plain-ETH semantics:
 
 ```bash
@@ -226,13 +226,13 @@ arc-forge test --network arc
 ```
 
 Writing to mainnet needs funded keys in `.env` (mode 600). Every mainnet drill is rehearsed
-against a fork first — see [`scripts/mainnet/`](scripts/mainnet/).
+against a fork first; see [`scripts/mainnet/`](scripts/mainnet/).
 
 ## Repo
 
 ```text
 packages/contracts   Foundry: Setoff.sol, tests, invariants, deploy and drill scripts
-apps/web             Next.js 16 · React 19 · viem — reads the chain, no backend
+apps/web             Next.js 16 · React 19 · viem. Reads the chain, no backend
 docs/                RESEARCH · DECISIONS · EVIDENCE · SUBMISSION
 ```
 
