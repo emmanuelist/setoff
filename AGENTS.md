@@ -37,7 +37,7 @@ docs.
 ```text
 packages/contracts  Foundry: Setoff contracts, tests, deploy scripts   [phases 1–2]
 apps/web            Next.js frontend, reads the chain via viem          [phases 1, 3–4]
-docs/               RESEARCH, DECISIONS, EVIDENCE, RUNOFSHOW
+docs/               RESEARCH, DECISIONS, EVIDENCE, SUBMISSION
 scripts/            check-design.mjs
 internal/           strategy, competitor notes, raw evidence — gitignored, never commit
 ```

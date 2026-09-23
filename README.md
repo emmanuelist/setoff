@@ -151,6 +151,40 @@ claimed by a badge.
 
 ---
 
+## Worth taking further
+
+Netting is not a new idea — it is how CLS settles FX and how every clearing house works. What
+has not existed is a version where the parties can check the net themselves, and where nobody
+has to go first. That needs three things at once: one agreed price, atomic settlement, and no
+privileged operator. Setoff is a small working instance of exactly that.
+
+**What the demo deliberately is not.** Sixteen debts and eight parties per cycle, because a
+fixing and a settlement have to fit in one block. Four wallets I control. Dollars, not
+thousands. No audit. Those are the boundaries of a two-week build, not of the idea.
+
+**What the real version needs, in the order it would matter:**
+
+- **Local-currency payout.** Creditors are paid USDC at the fixing today. StableFX and
+  local-currency stablecoins (MXNB, BRLA, JPYC) are coming to Arc; when they are permissionless,
+  the settlement leg moves from "USDC at the fixing" to "the creditor's own currency" **without
+  changing the clearing logic** — the netting already happens in a common unit.
+- **Counterparties who are not already on-chain.** The clearing is sound; the onboarding is the
+  product problem. A treasurer will not manage four wallets, and the enrolment step is where
+  that has to be solved.
+- **A cycle bigger than one block.** Past sixteen debts the fixing and settlement need to be
+  split across transactions without losing atomicity. That is a real design problem and it is
+  the first thing I would work on.
+- **An audit**, before anything with a real balance sheet touches it.
+
+**Why this belongs on Arc specifically.** The netting arithmetic would run anywhere. The
+settlement design would not: native-USDC payments with no approvals and no allowance surface, a
+payout model shaped by the fact that an Arc transfer can revert on a live account, and finality
+that makes "either every party settles or none does" enforceable rather than probabilistic. On a
+chain where USDC is an ERC-20 with probabilistic finality, this needs approvals and confirmation
+delays — a different, weaker product.
+
+---
+
 ## Limits
 
 Naming these is cheaper than having a judge find them.
@@ -199,7 +233,7 @@ against a fork first — see [`scripts/mainnet/`](scripts/mainnet/).
 ```text
 packages/contracts   Foundry: Setoff.sol, tests, invariants, deploy and drill scripts
 apps/web             Next.js 16 · React 19 · viem — reads the chain, no backend
-docs/                RESEARCH · DECISIONS · EVIDENCE · RUNOFSHOW
+docs/                RESEARCH · DECISIONS · EVIDENCE · SUBMISSION
 ```
 
 Why things are the way they are is in [`docs/DECISIONS.md`](docs/DECISIONS.md); the built visual

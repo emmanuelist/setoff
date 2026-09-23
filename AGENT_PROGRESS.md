@@ -20,7 +20,7 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       mutual debts annihilate into exactly the net. Party focus cards; a statement below.
       Recorded in DESIGN.md (v3, D012). Specimen `internal/design/specimen-v3.html`,
       verified at 1440 and a true 390 across every stage: 120 fps, no collisions, clipping
-      or overflow, contrast measured. docs/RUNOFSHOW.md is scripted as a 3-minute video
+      or overflow, contrast measured. the demo film is built by `npm run film:all` and its script is `scripts/narration.ts`
       with a Herstatt cold open.
 - [x] **Phase 1 — Milestone 1: debts priced in currency (done 2026-09-22, ahead of Sep 27).**
       *Contracts:* 27 tests, 4 invariants and 2 mainnet-fork tests are green; deployed at
