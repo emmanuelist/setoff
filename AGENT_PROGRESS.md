@@ -97,10 +97,13 @@ app on 2026-09-22 (typeset, clarify, layout, harden, adapt, audit, animate, poli
 audit scored 17/20; its snapshot and the dismissed detector findings are in `.impeccable/`.
 Rendered and inspected at 1440 and 390 on the home, cycle and debt pages.
 
-Phase 5 next: the README as a proof surface, the app deployed, the video. Two items carried in
-from Phase 3: the home page still blocks on every chain read before it paints (no route uses
-`Suspense`), which is the single biggest win left for a judge's first impression; and cycle #2
-is litter, `Open` and empty past its deadline, voidable by anyone.
+The home and cycle pages now stream: every read still goes out in one wave, but each plate awaits
+its own slice inside a `Suspense` boundary, so the shell paints first. **Home TTFB 3.44s → 0.016s;
+the cycle page 4.44s → 0.40s.** `/debts/[id]` (1.7s) and `/cycles` (1.4s) are each a single wave
+and still block; stream them the same way if they ever matter.
+
+Phase 5 next: the README as a proof surface, the app deployed, the video. Carried in: cycle #2 is
+litter, `Open` and empty past its deadline, voidable by anyone.
 
 **Measured on 2026-09-23:** Arc's public RPC is load-balanced and **not read-your-writes
 consistent**: a read issued straight after a write can land on a node a block behind and be
