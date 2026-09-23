@@ -87,8 +87,13 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       USDC deposit came back to the wei, and all three debts returned to the direct path
       still endorsed. Receipts and the verification reads are in `docs/EVIDENCE.md`.
       Drill: `scripts/mainnet/void.sh`.
-- [ ] **Phase 5 — Proof surface (Oct 5–6).** README as proof surface, deployed app, demo
-      video, verified contracts, honest limits, all links clicked.
+- [ ] **Phase 5 — Proof surface (Oct 5–6).** Mostly done, 2026-09-23.
+      *Done:* README rebuilt as a proof surface with every link checked; MIT LICENSE and a
+      CI workflow that runs the app gate (green); app deployed to
+      <https://setoff-omega.vercel.app>; demo filmed and published at
+      <https://youtu.be/4KKoGLYV9E0> (1:41, 1920x1080, word-level captions).
+      *Left:* the honest-limits pass over the submission copy, and a read of the whole
+      README from a cold browser on a phone.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 

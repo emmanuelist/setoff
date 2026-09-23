@@ -21,12 +21,25 @@ which on Arc *is* USDC — no ERC-20 approvals, no wrapper, no settlement asset 
 paid in the same unit as the debt. Move it elsewhere and "pay the net in the money the chain is
 denominated in" stops being a sentence that means anything.
 
-**[Live app ↗](https://setoff-omega.vercel.app)** · **[The contract, verified ↗](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)** · **[A cycle that settled ↗](https://explorer.arc.io/tx/0x6f840be9a2501cb80d4223ca7690577b987522c1bf5b7513a418c45f0d0ba10d)** · **[A cycle that was voided ↗](https://explorer.arc.io/tx/0x5ec942bfc6c3f551fed264e1477c9b11a098f233708de501242d15564d360e3b)** · **[How it works ↗](#how-it-works)** · **[Run it ↗](#run-it-locally)**
+**[Watch the demo · 1:41 ↗](https://youtu.be/4KKoGLYV9E0)** · **[Live app ↗](https://setoff-omega.vercel.app)** · **[The contract, verified ↗](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)** · **[How it works ↗](#how-it-works)** · **[Run it ↗](#run-it-locally)**
 
-<!-- PHASE 5: the demo video is the last empty slot. -->
 _Reading Arc mainnet live. Every figure on that page is a contract read, an event, or a Chainlink answer._
 
 </div>
+
+---
+
+## Demo
+
+[![Watch the demo](assets/cover.png)](https://youtu.be/4KKoGLYV9E0)
+
+**[▶ Watch on YouTube — 1:41](https://youtu.be/4KKoGLYV9E0)**
+
+Filmed against the deployed app reading Arc mainnet, not a mockup and not a reconstruction.
+It opens on Herstatt in 1974, shows a real cycle of five debts in five currencies setting off
+to a single net at one Chainlink fixing, then shows a second cycle being voided because one
+party never funded — with the funded party's deposit coming back in full. It closes on the
+17 refusals, run live against the contract.
 
 ---
 
