@@ -231,6 +231,13 @@
       0 -1px 0 rgb(29 27 24 / 0.04);
   }
 
+  /* An instrument still reading: one slow pass of light over the well, never a shimmer loop */
+  .sweep {
+    background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.55) 50%, transparent 80%);
+    animation: sweep 1.8s var(--settle) infinite;
+  }
+  @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
   /* Struck through: the span a set-off cancelled, left visible where it stood */
   .hatch {
     background-image: repeating-linear-gradient(-45deg, rgb(29 27 24 / 0.22) 0 1px, transparent 1px 5px);

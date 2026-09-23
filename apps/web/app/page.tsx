@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { connection } from "next/server";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { ChainClock } from "@/components/ChainClock";
@@ -7,13 +8,14 @@ import { CycleStatement } from "@/components/CycleStatement";
 import { DebtLedger, type Priced } from "@/components/DebtLedger";
 import { FixingBoard } from "@/components/FixingBoard";
 import { Perforation } from "@/components/Marks";
+import { Pending } from "@/components/room/Pending";
 import { Plate } from "@/components/room/Plate";
 import { YourPosition, type PositionCycle, type PositionDebt } from "@/components/YourPosition";
 import { SETOFF_V1_ADDRESS, SOURCIFY, addressUrl, publicClient } from "@/lib/chain";
 import { pad, short } from "@/lib/format";
 import { formatUnits } from "viem";
 import { formatUsdc } from "@/lib/money";
-import { readCycle, readCycles, readDebts, readFixings, readMaxFixingAge, readQuote, readReceipt, type CycleView } from "@/lib/setoff";
+import { readCycle, readCycles, readDebts, readFixings, readMaxFixingAge, readQuote, readReceipt } from "@/lib/setoff";
 
 /** The two paths a debt can take, in the words the rest of the app uses for them. */
 const DIRECT = [
@@ -37,47 +39,134 @@ const LIMITS = [
   "Amounts are dollars, not thousands, because this is real money on mainnet.",
 ];
 
-export default async function Home() {
-  await connection(); // every figure is read at request time, never frozen at build
-  // Every read the page needs at once: a public RPC charges a round trip per wave, not per call.
-  const [reads, debts, maxAge, head, allCycles] = await Promise.all([readFixings(), readDebts(), readMaxFixingAge(), publicClient.getBlock(), readCycles(10)]);
-  const now = Number(head.timestamp);
+/**
+ * Every read the page needs, started at once and awaited by nobody here. A public RPC charges a
+ * round trip per wave, so the calls all go out together; each plate then awaits only its own
+ * slice inside a Suspense boundary, and the shell paints without waiting for any of them.
+ */
+function reads() {
+  const base = Promise.all([readFixings(), readDebts(), readMaxFixingAge(), publicClient.getBlock(), readCycles(10)]);
 
   // The latest cycle that has been fixed is the one worth showing: its statement is real.
-  const latestFixed = allCycles.find((c) => c.fixedAt !== null);
-  const latest: CycleView | null = latestFixed ? await readCycle(latestFixed.id) : null;
-  const cycleValues = new Map<bigint, bigint>();
-  if (latest && latest.valuation.basis === "fixing") for (const [k, v] of latest.valuation.values) cycleValues.set(k, v);
+  // The signature plate leads with a cycle that actually cleared, because that is the claim.
+  // A voided cycle is the truth too, but it belongs on its own page, not as the headline.
+  const latest = base.then(([, , , , allCycles]) => {
+    const best = allCycles.find((c) => c.state === "settled") ?? allCycles.find((c) => c.fixedAt !== null);
+    return best ? readCycle(best.id) : null;
+  });
 
-  const priced = new Map<bigint, Priced>();
-  await Promise.all(
-    debts.map(async (d) => {
-      if (d.state === "netted" || (d.cycleId !== 0 && cycleValues.has(d.id))) {
-        const v = cycleValues.get(d.id);
-        priced.set(d.id, v !== undefined ? { kind: "paid", usdc: v } : null);
-      } else if (d.state === "paid") {
-        const r = await readReceipt(d);
-        priced.set(d.id, r ? { kind: "paid", usdc: r.usdc } : null);
-      } else if (d.state === "accepted") {
-        const q = await readQuote(d.id);
-        priced.set(d.id, q.ok ? { kind: "quote", usdc: q.due } : { kind: "refused" });
-      }
-    }),
-  );
+  // A cycle's debts are priced at its fixing; everything else is quoted or has a receipt.
+  const priced = Promise.all([base, latest]).then(async ([[, debts], view]) => {
+    const values = new Map<bigint, bigint>();
+    if (view && view.valuation.basis === "fixing") for (const [k, v] of view.valuation.values) values.set(k, v);
+    const out = new Map<bigint, Priced>();
+    await Promise.all(
+      debts.map(async (d) => {
+        if (d.state === "netted" || (d.cycleId !== 0 && values.has(d.id))) {
+          const v = values.get(d.id);
+          out.set(d.id, v !== undefined ? { kind: "paid", usdc: v } : null);
+        } else if (d.state === "paid") {
+          const r = await readReceipt(d);
+          out.set(d.id, r ? { kind: "paid", usdc: r.usdc } : null);
+        } else if (d.state === "accepted") {
+          const q = await readQuote(d.id);
+          out.set(d.id, q.ok ? { kind: "quote", usdc: q.due } : { kind: "refused" });
+        }
+      }),
+    );
+    return { debts, priced: out, values };
+  });
+
+  return { base, latest, priced };
+}
+
+type Reads = ReturnType<typeof reads>;
+
+/** What this contract has actually done: every debt it holds, and every dollar that moved. */
+async function Tally({ r }: { r: Reads }) {
+  const [[, , , , allCycles], { debts, priced }] = await Promise.all([r.base, r.priced]);
   const paid = debts.filter((d) => d.state === "paid");
   const netted = debts.filter((d) => d.state === "netted");
   const paidDirect = paid.reduce((sum, d) => { const p = priced.get(d.id); return p?.kind === "paid" ? sum + p.usdc : sum; }, 0n);
-
-  // Every cycle still running, so the connected wallet can see its own position.
-  const running = allCycles.filter((c) => c.state === "open" || c.state === "fixed");
-  // What this contract has actually done: every debt it holds, and every dollar that moved for them.
   const settled = allCycles.filter((c) => c.state === "settled");
-  const cycleGross = settled.reduce((t, c) => t + c.gross, 0n);
-  const cycleMoved = settled.reduce((t, c) => t + c.netMoved, 0n);
-  const movedTotal = paidDirect + cycleMoved;
-  const grossTotal = paidDirect + cycleGross;
+  const movedTotal = paidDirect + settled.reduce((t, c) => t + c.netMoved, 0n);
+  const grossTotal = paidDirect + settled.reduce((t, c) => t + c.gross, 0n);
   const spared = grossTotal === 0n ? 0n : ((grossTotal - movedTotal) * 1000n) / grossTotal;
-  const openCycles: PositionCycle[] = (await Promise.all(running.map((c) => readCycle(c.id).then((v) => ({ c, v })))))
+  return (
+    <>
+      {[
+        { k: "Debts settled", v: String(paid.length + netted.length) },
+        { k: "Gross owed", v: formatUsdc(grossTotal, 2) },
+        { k: "USDC moved", v: formatUsdc(movedTotal, 2) },
+        { k: "Set off", v: `${formatUnits(spared, 1)}%` },
+      ].map((f) => (
+        <div key={f.k} className="grid gap-1 sm:row-span-2 sm:grid-rows-subgrid">
+          <dt className="legend">{f.k}</dt>
+          <dd className="fig self-end text-figure-m leading-none">{f.v}</dd>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** The signature plate: a real cycle's gross collapsing to the net that moved. */
+async function LatestCycle({ r }: { r: Reads }) {
+  const [[, , , head], view, { values }] = await Promise.all([r.base, r.latest, r.priced]);
+  if (!view) {
+    return (
+      <Plate legend="Chain clock" aside={<span className="legend">UTC</span>} className="mounted col-span-12 justify-center sm:px-[30px] lg:col-span-6">
+        <ChainClock readAt={{ number: head.number.toString(), timestamp: Number(head.timestamp) }} />
+      </Plate>
+    );
+  }
+  return (
+    <Plate
+      legend={<Link href={`/cycles/${view.cycle.id}`} className="-my-2 inline-flex items-center gap-1.5 py-2 no-underline hover:text-ink">Latest cycle · <span className="fig tracking-normal">{pad(view.cycle.id, 4)}</span><ArrowRight className="size-3.5" aria-hidden="true" /></Link>}
+      aside={<CycleMark state={view.cycle.state} size="sm" />}
+      className="col-span-12 lg:col-span-6"
+    >
+      <CycleStatement
+        compact
+        debts={view.debts.map((d) => ({ id: d.id.toString(), currency: d.currency, amount: d.amount, creditor: d.creditor, debtor: d.debtor, usdc: values.get(d.id) ?? 0n }))}
+        parties={view.positions}
+        gross={view.cycle.gross}
+        netMoved={view.cycle.netMoved}
+        basis="fixing"
+        fixed
+        outcome={view.cycle.state === "settled" ? "settled" : view.cycle.state === "void" ? "void" : "open"}
+      />
+    </Plate>
+  );
+}
+
+async function Fixings({ r }: { r: Reads }) {
+  const [[fixings, , maxAge, head], view] = await Promise.all([r.base, r.latest]);
+  const now = Number(head.timestamp);
+  return (
+    <FixingBoard
+      reads={fixings}
+      now={now}
+      maxAge={maxAge}
+      lead={
+        view ? (
+          <div className="plate mounted flex flex-col gap-3 p-4 max-sm:col-span-2 sm:px-5" role="group" aria-label="Chain clock">
+            <div className="flex items-center justify-between gap-2">
+              <span className="legend">Chain clock</span>
+              <span className="legend">UTC</span>
+            </div>
+            <ChainClock compact readAt={{ number: head.number.toString(), timestamp: now }} />
+          </div>
+        ) : undefined
+      }
+    />
+  );
+}
+
+/** The only plate whose content depends on who is looking. */
+async function Position({ r }: { r: Reads }) {
+  const [[, , , , allCycles], { debts, priced }] = await Promise.all([r.base, r.priced]);
+  const running = allCycles.filter((c) => c.state === "open" || c.state === "fixed");
+  const cycles: PositionCycle[] = (await Promise.all(running.map((c) => readCycle(c.id).then((v) => ({ c, v })))))
     .flatMap(({ c, v }) => {
       if (!v || v.valuation.basis === "refused") return [];
       const nets = v.valuation;
@@ -93,6 +182,36 @@ export default async function Home() {
     const p = priced.get(d.id);
     return { id: d.id.toString(), creditor: d.creditor, debtor: d.debtor, state: d.state, cycleId: d.cycleId, usdc: p && p.kind !== "refused" ? p.usdc.toString() : null };
   });
+  return (
+    <Plate legend="Your position" aside={<span className="legend">Read live</span>} className="col-span-12">
+      <YourPosition debts={positionDebts} cycles={cycles} />
+    </Plate>
+  );
+}
+
+async function Ledger({ r }: { r: Reads }) {
+  const { debts, priced } = await r.priced;
+  const paid = debts.filter((d) => d.state === "paid");
+  const netted = debts.filter((d) => d.state === "netted");
+  const paidDirect = paid.reduce((sum, d) => { const p = priced.get(d.id); return p?.kind === "paid" ? sum + p.usdc : sum; }, 0n);
+  return (
+    <Plate
+      legend="Debts"
+      aside={
+        <span>
+          <span className="fig text-ink">{debts.length}</span> on the contract · <span className="fig text-ink">{paid.length}</span> paid directly (<span className="fig text-ink">{formatUsdc(paidDirect, 4)}</span> USDC) · <span className="fig text-ink">{netted.length}</span> netted in cycles
+        </span>
+      }
+      className="col-span-12 lg:col-span-8"
+    >
+      <DebtLedger debts={debts} priced={priced} next={(debts[0]?.id ?? 0n) + 1n} />
+    </Plate>
+  );
+}
+
+export default async function Home() {
+  await connection(); // every figure is read at request time, never frozen at build
+  const r = reads();
 
   return (
     <main className="px-[var(--gutter)] pt-[var(--seam)]">
@@ -109,17 +228,14 @@ export default async function Home() {
 
           {/* Labels wrap at narrow columns; subgrid keeps every figure on one baseline. */}
           <dl className="mt-auto grid grid-cols-2 gap-x-6 gap-y-6 border-y border-rule py-5 sm:grid-cols-4 sm:grid-rows-[auto_auto] sm:gap-y-2">
-            {[
-              { k: "Debts settled", v: String(paid.length + netted.length) },
-              { k: "Gross owed", v: formatUsdc(grossTotal, 2) },
-              { k: "USDC moved", v: formatUsdc(movedTotal, 2) },
-              { k: "Set off", v: `${formatUnits(spared, 1)}%` },
-            ].map((f) => (
-              <div key={f.k} className="grid gap-1 sm:row-span-2 sm:grid-rows-subgrid">
-                <dt className="legend">{f.k}</dt>
-                <dd className="fig self-end text-figure-m leading-none">{f.v}</dd>
+            <Suspense fallback={["Debts settled", "Gross owed", "USDC moved", "Set off"].map((k) => (
+              <div key={k} className="grid gap-1 sm:row-span-2 sm:grid-rows-subgrid" aria-busy="true">
+                <dt className="legend">{k}</dt>
+                <dd className="fig self-end text-figure-m leading-none text-faint">—</dd>
               </div>
-            ))}
+            ))}>
+              <Tally r={r} />
+            </Suspense>
           </dl>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -128,60 +244,21 @@ export default async function Home() {
           </div>
         </section>
 
-        {latest ? (
-          <Plate
-            legend={<Link href={`/cycles/${latest.cycle.id}`} className="-my-2 inline-flex items-center gap-1.5 py-2 no-underline hover:text-ink">Latest cycle · <span className="fig tracking-normal">{pad(latest.cycle.id, 4)}</span><ArrowRight className="size-3.5" aria-hidden="true" /></Link>}
-            aside={<CycleMark state={latest.cycle.state} size="sm" />}
-            className="col-span-12 lg:col-span-6"
-          >
-            <CycleStatement
-              compact
-              debts={latest.debts.map((d) => ({ id: d.id.toString(), currency: d.currency, amount: d.amount, creditor: d.creditor, debtor: d.debtor, usdc: cycleValues.get(d.id) ?? 0n }))}
-              parties={latest.positions}
-              gross={latest.cycle.gross}
-              netMoved={latest.cycle.netMoved}
-              basis="fixing"
-              fixed
-            />
-          </Plate>
-        ) : (
-          <Plate legend="Chain clock" aside={<span className="legend">UTC</span>} className="mounted col-span-12 justify-center sm:px-[30px] lg:col-span-6">
-            <ChainClock readAt={{ number: head.number.toString(), timestamp: now }} />
-          </Plate>
-        )}
+        <Suspense fallback={<Pending legend="Latest cycle" className="col-span-12 lg:col-span-6" rows={5} height={300} />}>
+          <LatestCycle r={r} />
+        </Suspense>
 
-        <FixingBoard
-          reads={reads}
-          now={now}
-          maxAge={maxAge}
-          lead={
-            latest ? (
-              <div className="plate mounted flex flex-col gap-3 p-4 max-sm:col-span-2 sm:px-5" role="group" aria-label="Chain clock">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="legend">Chain clock</span>
-                  <span className="legend">UTC</span>
-                </div>
-                <ChainClock compact readAt={{ number: head.number.toString(), timestamp: now }} />
-              </div>
-            ) : undefined
-          }
-        />
+        <Suspense fallback={<Pending legend="Today's fixings" className="col-span-12" rows={2} height={150} />}>
+          <Fixings r={r} />
+        </Suspense>
 
-        <Plate legend="Your position" aside={<span className="legend">Read live</span>} className="col-span-12">
-          <YourPosition debts={positionDebts} cycles={openCycles} />
-        </Plate>
+        <Suspense fallback={<Pending legend="Your position" aside="Read live" className="col-span-12" rows={2} />}>
+          <Position r={r} />
+        </Suspense>
 
-        <Plate
-          legend="Debts"
-          aside={
-            <span>
-              <span className="fig text-ink">{debts.length}</span> on the contract · <span className="fig text-ink">{paid.length}</span> paid directly (<span className="fig text-ink">{formatUsdc(paidDirect, 4)}</span> USDC) · <span className="fig text-ink">{netted.length}</span> netted in cycles
-            </span>
-          }
-          className="col-span-12 lg:col-span-8"
-        >
-          <DebtLedger debts={debts} priced={priced} next={(debts[0]?.id ?? 0n) + 1n} />
-        </Plate>
+        <Suspense fallback={<Pending legend="Debts" className="col-span-12 lg:col-span-8" rows={7} height={360} />}>
+          <Ledger r={r} />
+        </Suspense>
 
         <div className="col-span-12 grid content-start gap-[var(--seam)] lg:col-span-4">
           <Plate className="gap-5">
