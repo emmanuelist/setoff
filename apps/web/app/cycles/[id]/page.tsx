@@ -72,6 +72,7 @@ export default async function CyclePage({ params }: PageProps<"/cycles/[id]">) {
               netMoved={netMoved}
               basis={valuation.basis}
               fixed={cycle.fixedAt !== null}
+              outcome={cycle.state === "settled" ? "settled" : cycle.state === "void" ? "void" : "open"}
             />
           )}
         </Plate>

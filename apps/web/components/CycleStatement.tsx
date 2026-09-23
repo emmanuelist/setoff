@@ -37,7 +37,7 @@ const pct = (v: bigint, max: bigint) => (max === 0n ? 0 : Number((v * 10000n) / 
  * the statement comes into view; the set-off can be replayed.
  */
 export function CycleStatement({
-  debts, parties, gross, netMoved, basis, fixed, compact = false,
+  debts, parties, gross, netMoved, basis, fixed, outcome = "open", compact = false,
 }: {
   debts: StatementDebt[];
   parties: StatementParty[];
@@ -45,6 +45,8 @@ export function CycleStatement({
   netMoved: bigint;
   basis: "fixing" | "preview";
   fixed: boolean;
+  /** What became of the cycle. A voided cycle moved nothing, and must never say it did. */
+  outcome?: "open" | "settled" | "void";
   compact?: boolean;
 }) {
   const reduce = useReducedMotion();
@@ -79,15 +81,19 @@ export function CycleStatement({
             aria-hidden="true"
           />
           <span className="text-lead leading-tight text-graphite sm:text-heading" aria-hidden="true">
-            {setOff ? "USDC moves" : <>USDC owed, gross,<br className="sm:hidden" /> in {currencies.length} {currencies.length === 1 ? "currency" : "currencies"}</>}
+            {setOff
+              ? outcome === "void" ? <>USDC would have moved,<br className="sm:hidden" /> had every party funded</>
+              : outcome === "settled" ? "USDC moved"
+              : "USDC moves"
+              : <>USDC owed, gross,<br className="sm:hidden" /> in {currencies.length} {currencies.length === 1 ? "currency" : "currencies"}</>}
           </span>
           <p className="sr">
-            {formatUsdc(gross, 4)} USDC was owed gross across {currencies.length} currencies; {formatUsdc(netMoved, 4)} USDC moves, {setOffPct}% set off.
+            {formatUsdc(gross, 4)} USDC was owed gross across {currencies.length} currencies; {setOffPct}% of it set off, leaving {formatUsdc(netMoved, 4)} USDC{outcome === "void" ? " that would have moved, had every party funded. The cycle was voided and every deposit refunded." : outcome === "settled" ? " that moved." : " to move."}
           </p>
         </div>
         <div className="grid justify-items-start gap-2 text-small text-graphite sm:justify-items-end sm:text-right">
-          <span><span className="fig text-ink">{formatUsdc(gross, 4)}</span> owed · <span className="fig text-ink">{formatUsdc(netMoved, 4)}</span> moves · <span className="fig text-ink">{setOffPct}%</span> set off</span>
-          <span>{basis === "fixing" ? "Priced at the cycle's one fixing." : "At today's fixings, if it were fixed now. Nothing is priced until the fixing."}</span>
+          <span><span className="fig text-ink">{formatUsdc(gross, 4)}</span> owed · <span className="fig text-ink">{formatUsdc(netMoved, 4)}</span> {outcome === "void" ? "never moved" : outcome === "settled" ? "moved" : "moves"} · <span className="fig text-ink">{setOffPct}%</span> set off</span>
+          <span>{outcome === "void" ? "Voided: a net debtor never funded, so every deposit was refunded and nothing moved." : basis === "fixing" ? "Priced at the cycle's one fixing." : "At today's fixings, if it were fixed now. Nothing is priced until the fixing."}</span>
           {!reduce && <button type="button" className="key key-sm" onClick={replay} disabled={!setOff}><RotateCcw aria-hidden="true" />Replay the set-off</button>}
         </div>
       </div>
