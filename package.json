@@ -1,0 +1,24 @@
+{
+  "name": "setoff",
+  "private": true,
+  "type": "module",
+  "description": "Debts in five currencies clear at one on-chain fixing: only the net moves, and either every party settles or none does.",
+  "license": "MIT",
+  "scripts": {
+    "design": "node scripts/check-design.mjs --strict",
+    "film": "tsx scripts/film.ts",
+    "film:cut": "bash scripts/film-cut.sh",
+    "voice": "tsx scripts/voice.ts",
+    "film:music": "bash scripts/film-music.sh",
+    "film:mix": "bash scripts/film-mix.sh",
+    "film:master": "bash scripts/film-master.sh",
+    "film:facts": "bash scripts/facts.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "dotenv": "^17.4.2",
+    "playwright": "1.62.1",
+    "tsx": "^4.23.13",
+    "typescript": "^5"
+  }
+}
