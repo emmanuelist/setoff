@@ -92,8 +92,12 @@ All verified on mainnet on 2026-09-21; see `docs/RESEARCH.md`.
 - **Native USDC has 18 decimals. The ERC-20 view at `0x3600…0000` has 6. They are the SAME
   balance.** Contract accounting uses native units only (D006). Never mix `msg.value` with
   `balanceOf()`.
-- **One transfer emits two `Transfer` logs:** one from `0xffff…fffe` (18 decimals) and one
-  from `0x3600…` (6 decimals). An indexer reads exactly one of them.
+- **A native transfer emits ONE `Transfer` log, from `0xffff…fffe`, in 18 decimals.**
+  Measured 2026-09-23 on two mainnet receipts: a plain EOA→EOA send
+  (`0x321cc700…`, 1 log) and a payable contract call (`0x97c1…23c3`, 1 Transfer log of 2).
+  Neither emitted anything from `0x3600…`. An earlier note here claimed two logs, one per
+  decimal view; that is wrong for native transfers. **Untested:** what the ERC-20 view's
+  `transfer()` emits — assume nothing about it until it is measured.
 - **A native transfer can revert even with sufficient balance** (runtime blocklist, zero
   address, destroyed account). Hence withdrawals only (D007).
 - **Block timestamps are non-decreasing, not strictly increasing.** Write deadlines with

@@ -149,6 +149,28 @@ against cycle #1:
 - pay a netted debt directly, refused with `WrongState`;
 - open with a 5-minute funding window, refused with `InvalidSchedule`.
 
+## Returning funds to Binance
+
+Binance completed USDC deposit support on Arc on 2026-09-16, and the return path is verified
+end to end with a live deposit rather than assumed.
+
+| | |
+| --- | --- |
+| Rehearsed | forked mainnet at block 22,344,656, status `0x1`, 21,000 gas, no revert |
+| Sent | 0.1 USDC from the deployer, [`0x321cc700…c7db`](https://explorer.arc.io/tx/0x321cc700ba67d61e8b3b4ad388a850808ae96239f52cb0a1e18ea17d9b17c7db), block 22,346,012 |
+| Gas | 21,000 at 20.1 Gwei = 0.0004221 USDC |
+| Credited | Binance Spot, network ARC, "Completed", 2026-09-23 13:17:36 UTC |
+
+What it establishes:
+
+- The deposit address is an EOA (no code), so Binance's "smart contract deposits are not
+  supported" caveat does not apply to a send from one of our wallets.
+- **Minimum deposit is `>0.000001 USDC`**, so the five wallets need no consolidation: each can
+  send directly.
+- Credited at 1 confirmation, which on Arc is immediate.
+- **Binance indexes the native transfer.** A plain wallet send is enough; no ERC-20 `transfer()`
+  against `0x3600…` is needed.
+
 ## Measured facts
 
 | Fact | Value | Source |
@@ -161,3 +183,4 @@ against cycle #1:
 | A real five-currency cycle, end to end (open, 5 debts, fix, 2 fundings, settle, 2 withdrawals) | 0.0516 USDC in gas (2,394,253 gas over 17 transactions) | cycle #1 receipts |
 | One debt, propose → accept → pay → withdraw | 0.00635 USDC | four receipts above |
 | Gas floor | 20 Gwei | Arc docs; `eth_gasPrice` |
+| Logs per native transfer | 1, from `0xffff…fffe`, 18 decimals | receipts `0x321cc700…`, `0x97c1…23c3` |
