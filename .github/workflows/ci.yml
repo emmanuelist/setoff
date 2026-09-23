@@ -1,0 +1,42 @@
+# The app gate, exactly as AGENTS.md defines it. The contract suite is not here: Arc Foundry
+# is a checksum-verified binary with no published installer, so it runs locally and its
+# results are recorded in the README rather than claimed by a badge.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    name: lint · typecheck · build · design
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install
+        run: npm ci
+        working-directory: apps/web
+
+      - name: Lint (zero warnings)
+        run: npm run lint
+        working-directory: apps/web
+
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: apps/web
+
+      - name: Build
+        run: npm run build
+        working-directory: apps/web
+
+      # DESIGN.md is authority of intent; globals.css is authority of truth.
+      - name: DESIGN.md matches the stylesheet
+        run: node scripts/check-design.mjs --strict
