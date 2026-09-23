@@ -42,7 +42,7 @@ const OUT = "film";
  *  narration is not describing. */
 const FACTS: { settled: { id: number }; voided: { id: number } } =
   JSON.parse(readFileSync("film/facts.json", "utf8"));
-const W = 1440, H = 900;
+const W = 1600, H = 900;  // 16:9, so it drops into the 1080p frame without letterboxing
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -125,14 +125,20 @@ function scheduleActions(page: Page, moves: (Move & { at: number })[]): NodeJS.T
   return timers;
 }
 
+/** Captions drawn IN the page. Off by default: they are composited into the
+ *  band below the product instead, so nothing is laid over the UI. */
 async function captions(page: Page, name: string) {
   const cues = CUES[name];
-  if (cues?.length) {
-    try {
-      await page.evaluate(CAPTION_RUNTIME.replace("__CUES__", JSON.stringify(cues)));
-      process.stdout.write(`  captions: ${cues.length} cues injected\n`);
-    } catch (e) { process.stdout.write(`  captions FAILED: ${(e as Error).message.slice(0, 90)}\n`); }
-  }
+  if (!cues?.length) return;
+  try {
+    await page.evaluate(CAPTION_RUNTIME.replace("__CUES__", JSON.stringify(cues)));
+    process.stdout.write(`  captions: ${cues.length} cues injected\n`);
+  } catch (e) { process.stdout.write(`  captions FAILED: ${(e as Error).message.slice(0, 90)}\n`); }
+}
+
+/** The cursor. Always installed — it is the thing that makes a scripted capture
+ *  read as someone using the product rather than a screenshot that moves. */
+async function pointer(page: Page, name: string) {
   // Resolve sentence-anchored moves against the measured narration, so the
   // cursor tracks what is actually being said rather than a planned schedule.
   let measured: { at: number; secs: number }[] | undefined;
@@ -173,7 +179,11 @@ async function segment(name: string, secs: number, go: (p: Page) => Promise<void
   const startedAt = Date.now();
   console.log(`\n▸ ${name}`);
   await go(page);
-  await captions(page, name);
+  // Captions are composited into the band BELOW the product now, so nothing is
+  // ever drawn over the UI. FILM_CAPTIONS=1 puts them back in the page for a
+  // quick look without running the compositor.
+  if (process.env.FILM_CAPTIONS === "1") await captions(page, name);
+  await pointer(page, name);
   await holdAfterSetup(name, startedAt, secs);
   await ctx.close();     // flushes the video
   await browser.close();
@@ -242,57 +252,48 @@ async function main() {
     `).catch((e) => { console.log("    scrollTo failed:", String(e).slice(0, 140)); });
 
 
-  // 1. The claim, then the evidence under it. Opens on the whole page, walks
-  //    down to the live feeds and the ledger. No zoom here on purpose.
-  await segment("01-claim", windowFor("01-claim", 24), async (p) => {
+  // 1. The problem, over the live product. The old cut spent 16s on a static
+  //    card before anything moved; this reaches the app in five seconds.
+  await segment("01-problem", windowFor("01-problem", 16), async (p) => {
     await p.goto(APP, { waitUntil: "domcontentloaded" });
     await untilPainted(p, 1200);
     await untilSettled(p);
     await wait(900);
-    void (async () => {
-      await wait(7500); await scrollTo(p, "#fixings", 2600, -120);
-      await wait(6500); await scrollTo(p, "#ledger", 2800, -110);
-    })();
+    void (async () => { await wait(8000); await scrollTo(p, "#fixings", 2800, -120); })();
   });
 
-  // 2. The moment. A real settled cycle: the set-off is replayed on camera.
-  //    The statement animates once on view, so the shot holds before the
-  //    pointer presses Replay — otherwise the push-in lands on a finished bar.
-  await segment("02-clearing", windowFor("02-clearing", 46), async (p) => {
+  // 2. The moment. The set-off is replayed on camera and then left alone: this
+  //    segment is deliberately more silence than speech.
+  await segment("02-clearing", windowFor("02-clearing", 38), async (p) => {
     await p.goto(`${APP}/cycles/${FACTS.settled.id}`, { waitUntil: "domcontentloaded" });
     await untilPainted(p, 1200);
     await untilSettled(p);
     await wait(1100);
   });
 
-  // 3. The reversal. The cycle that was voided, and the deposit that came back.
-  await segment("03-reversal", windowFor("03-reversal", 38), async (p) => {
+  // 3. The reversal.
+  await segment("03-reversal", windowFor("03-reversal", 26), async (p) => {
     await p.goto(`${APP}/cycles/${FACTS.voided.id}`, { waitUntil: "domcontentloaded" });
     await untilPainted(p, 1200);
     await untilSettled(p);
     await wait(1100);
   });
 
-  // 4. The refusal room, pressed live. The run takes ~15s against mainnet, so
-  //    the click fires on the first line and the results fill in under the voice.
-  await segment("04-refusals", windowFor("04-refusals", 28), async (p) => {
+  // 4. The refusal room, pressed live.
+  await segment("04-refusals", windowFor("04-refusals", 20), async (p) => {
     await p.goto(`${APP}/refusals`, { waitUntil: "domcontentloaded" });
     await untilPainted(p, 1200);
     await untilSettled(p);
     await wait(900);
-    void (async () => { await wait(14000); await scrollTo(p, "#run-attempts", 2400, -140); })();
   });
 
-  // 5. The limits, then the claim, back where it started.
-  await segment("05-close", windowFor("05-close", 30), async (p) => {
-    await p.goto(APP, { waitUntil: "domcontentloaded" });
+  // 5. Close on the strongest result. The film ends where the claim is proved,
+  //    on the settled statement — not on the explainer grid it used to finish on.
+  await segment("05-close", windowFor("05-close", 19), async (p) => {
+    await p.goto(`${APP}/cycles/${FACTS.settled.id}`, { waitUntil: "domcontentloaded" });
     await untilPainted(p, 1200);
     await untilSettled(p);
-    await wait(900);
-    void (async () => {
-      await wait(9000);  await scrollTo(p, "footer", 2600, -320);
-      await wait(9000);  await scrollTo(p, "#claim", 2600, -40);
-    })();
+    await wait(1100);
   });
 
   for (const c of CARDS) await cardSegment(c);

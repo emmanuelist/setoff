@@ -23,7 +23,10 @@ dotenv({ path: new URL("../.env", import.meta.url).pathname, quiet: true });
 const KEY = process.env.ELEVENLABS_API_KEY;
 // "George" — warm, authoritative narration. Override with ELEVENLABS_VOICE_ID.
 const VOICE = process.env.ELEVENLABS_VOICE_ID ?? "JBFqnCBsd6RMkjVDRZzb";
-const MODEL = process.env.ELEVENLABS_MODEL ?? "eleven_multilingual_v2";
+const MODEL = process.env.ELEVENLABS_MODEL ?? "eleven_v3";
+/** v3 takes an inline direction. Conversational, because a technical claim read
+ *  as an advertisement is the fastest way to lose a reviewer's trust. */
+const DIRECTION = process.env.ELEVENLABS_DIRECTION ?? "[conversational]";
 const OUT = "film/voice";
 
 async function eleven(text: string, file: string) {
@@ -31,11 +34,14 @@ async function eleven(text: string, file: string) {
     method: "POST",
     headers: { "xi-api-key": KEY!, "content-type": "application/json" },
     body: JSON.stringify({
-      text,
+      text: MODEL === "eleven_v3" ? `${DIRECTION} ${text}` : text,
       model_id: MODEL,
-      // Higher stability keeps a technical read even; a little style keeps it
-      // from sounding flat across three minutes.
-      voice_settings: { stability: 0.45, similarity_boost: 0.75, style: 0.12, use_speaker_boost: true },
+      // v3 reads a direction tag rather than a style number; 0.5 is its natural
+      // setting and the one the reference pipeline landed on.
+      voice_settings:
+        MODEL === "eleven_v3"
+          ? { stability: 0.5 }
+          : { stability: 0.45, similarity_boost: 0.75, style: 0.12, use_speaker_boost: true },
     }),
   });
   if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 180)}`);
@@ -90,6 +96,22 @@ async function main() {
     const pieces: string[] = [];
     let t = 0;
     timing[b.segment] = [];
+
+    // A segment can carry no voice at all — the title card runs on music alone.
+    // It still needs an audio file of the right length, or the concat that pads
+    // the track to picture has nothing to place.
+    if (lines.length === 0) {
+      const window0 = measured[b.segment] ?? b.secs;
+      const padded0 = `${OUT}/${b.segment}-padded.mp3`;
+      execFileSync("ffmpeg", [
+        "-y", "-loglevel", "error", "-f", "lavfi",
+        "-i", `anullsrc=r=44100:cl=mono:d=${window0.toFixed(3)}`,
+        "-c:a", "libmp3lame", "-b:a", "192k", padded0,
+      ]);
+      block[b.segment] = padded0;
+      console.log(`  ${b.segment.padEnd(16)} silent   / ${window0.toFixed(1)}s segment`);
+      continue;
+    }
     for (let i = 0; i < lines.length; i++) {
       const pf = `${OUT}/${b.segment}-${String(i).padStart(2, "0")}.mp3`;
       // Cache by line text. The pipeline runs voice twice (once for timings,

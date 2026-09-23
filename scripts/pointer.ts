@@ -67,59 +67,40 @@ export function resolveMoves(
  *  No zoom here: the product is dense and legible at 1440x900, and pushing in
  *  on every beat reads as nausea. The cursor carries the attention instead. */
 export const MOVES: Record<string, Move[]> = {
-  // The claim, then the evidence under it. No zoom yet: the first shot should
-  // read as a whole page, so the later push-in has somewhere to come from.
-  "01-claim": [
-    { line: 0, lead: 1.3, sel: "#claim h1" },
-    { line: 1, lead: 0.5, sel: "#fixings", label: "one feed per currency" },
-    { line: 2, lead: 0.4, sel: "#ledger .legend", label: "every one a transaction" },
-    { line: 3, lead: 0.6, sel: "#tally" },
+  // Zoom is 1.06 and used twice in the whole film. An earlier cut pushed to 1.55
+  // on six beats; the note back was that constant motion competes with the UI
+  // rather than directing the eye. A nudge reads as attention; a lurch reads as
+  // an effect.
+  "01-problem": [
+    { line: 0, lead: 1.4, sel: "#claim h1" },
+    { line: 2, lead: 0.6, sel: "#fixings" },
   ],
 
-  // The moment. The set-off is replayed on camera, then held at 1.55 while the
-  // figures are read out. One push-in, released before the segment ends.
   "02-clearing": [
-    { line: 0, lead: 0.4, sel: "#ledger" },
-    { line: 1, lead: 0.5, sel: "#statement .legend, #statement" },
-    { line: 2, lead: 0.6, sel: "#fixings", label: "one read per currency" },
-    { line: 3, lead: 0.8, sel: "#fixings" },
-    { line: 4, lead: 0.2, sel: "#replay", label: "watch the set-off", click: true },
-    { line: 4, lead: 2.0, sel: "#beams", zoom: 1.55 },
-    { line: 5, lead: 0.6, sel: "#beams" },
-    // Release before aiming at the headline figure: while #beams is zoomed the
-    // figure sits outside the viewport, and the label filmed clipped to a corner.
-    { line: 6, lead: 0.2, sel: "#statement", zoom: 1 },
-    { line: 6, lead: 1.6, sel: "#statement .fig", label: "only the net moves" },
+    { line: 1, lead: 0.6, sel: "#statement .fig" },
+    { line: 2, lead: 0.8, sel: "#fixings", label: "one read per currency" },
+    // Press replay, then get out of the way and let it play.
+    { line: 3, lead: 0.4, sel: "#replay", label: "replay the set-off", click: true },
+    { line: 4, lead: 1.2, sel: "#beams", zoom: 1.06 },
+    { line: 6, lead: 1.0, sel: "#statement .fig" },
   ],
 
-  // The reversal. The refusal is the point, so the mark and the trail get the
-  // pointer, and the refund line gets the zoom.
   "03-reversal": [
-    { line: 0, lead: 0.5, sel: "#statement .fig" },
-    { line: 1, lead: 0.5, sel: "#beams", label: "one funded, one did not", zoom: 1.5 },
-    { line: 2, lead: 0.6, sel: "#beams" },
-    { line: 3, lead: 0.5, sel: "#statement", zoom: 1 },
-    { line: 4, lead: 0.5, sel: "#statement .fig", label: "refunded to the wei" },
-    { line: 5, lead: 0.5, sel: "#statement" },
+    { line: 0, lead: 0.6, sel: "#statement .fig" },
+    { line: 1, lead: 0.8, sel: "#beams", label: "one funded, one did not" },
+    { line: 3, lead: 0.6, sel: "#statement" },
   ],
 
-  // Pressed live. The run takes ~15s, which is why the button is clicked on the
-  // first line rather than the last.
   "04-refusals": [
-    { line: 0, lead: 0.3, sel: "#run-attempts", label: "run them all", click: true },
-    { line: 1, lead: 1.2, sel: "main .plate:first-child" },
-    { line: 2, lead: 0.8, sel: "main .plate:nth-child(2)", label: "refused by name" },
-    { line: 3, lead: 0.6, sel: "main .plate:nth-child(2)", zoom: 1.4 },
+    { line: 0, lead: 0.3, sel: "#run-attempts", label: "run all of them", click: true },
+    { line: 1, lead: 1.6, sel: "main .plate:nth-child(2)", zoom: 1.06 },
   ],
 
-  // The limits, said out loud, then the claim. Release any zoom before the end.
   "05-close": [
-    { line: 0, lead: 0.5, sel: "#claim h1", zoom: 1 },
-    { line: 1, lead: 0.5, sel: "footer" },
-    { line: 2, lead: 0.5, sel: "#stated, main .plate:last-child" },
-    { line: 3, lead: 0.8, sel: "#claim h1", label: "the whole claim" },
+    { line: 2, lead: 0.8, sel: "#statement .fig" },
   ],
 };
+
 
 
 export const POINTER_RUNTIME = `
