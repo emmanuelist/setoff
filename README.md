@@ -21,10 +21,10 @@ which on Arc *is* USDC — no ERC-20 approvals, no wrapper, no settlement asset 
 paid in the same unit as the debt. Move it elsewhere and "pay the net in the money the chain is
 denominated in" stops being a sentence that means anything.
 
-**[The contract, verified ↗](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)** · **[A cycle that settled ↗](https://explorer.arc.io/tx/0x6f840be9a2501cb80d4223ca7690577b987522c1bf5b7513a418c45f0d0ba10d)** · **[A cycle that was voided ↗](https://explorer.arc.io/tx/0x5ec942bfc6c3f551fed264e1477c9b11a098f233708de501242d15564d360e3b)** · **[How it works ↗](#how-it-works)** · **[Run it ↗](#run-it-locally)**
+**[Live app ↗](https://setoff-omega.vercel.app)** · **[The contract, verified ↗](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)** · **[A cycle that settled ↗](https://explorer.arc.io/tx/0x6f840be9a2501cb80d4223ca7690577b987522c1bf5b7513a418c45f0d0ba10d)** · **[A cycle that was voided ↗](https://explorer.arc.io/tx/0x5ec942bfc6c3f551fed264e1477c9b11a098f233708de501242d15564d360e3b)** · **[How it works ↗](#how-it-works)** · **[Run it ↗](#run-it-locally)**
 
-<!-- PHASE 5: replace this line with the deployed app and the demo video before submitting. -->
-_Live app and demo video land before submission; every link above is live on Arc mainnet right now._
+<!-- PHASE 5: the demo video is the last empty slot. -->
+_Reading Arc mainnet live. Every figure on that page is a contract read, an event, or a Chainlink answer._
 
 </div>
 
@@ -35,6 +35,9 @@ _Live app and demo video land before submission; every link above is live on Arc
 No demo mode, no seeded database, no fixtures. There is no backend and no database at all: the
 chain is the only store, and every figure in the UI is a contract read, an event, or a Chainlink
 answer. Click any of it.
+
+**The app.** <https://setoff-omega.vercel.app> — no login, nothing seeded, reading Arc mainnet at
+request time.
 
 **The contract.** [`0x8A78…80d6`](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)
 on Arc mainnet, block 22,187,522. Sourcify **exact match**. No owner, no admin key, no pause over
