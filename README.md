@@ -58,9 +58,9 @@ the "or none does" half of the claim, on-chain rather than in a test.
 (also Sourcify exact match, kept as its own record): MXN 10.00 → 0.5804588 USDC at that day's
 fixing.
 
-**The refusal room.** 18 attempts run against the live contract as read-only calls — stale rates,
+**The refusal room.** 17 attempts run against the live contract as read-only calls — stale rates,
 underpayment, paying someone else's debt, settling a cycle twice, voiding one that already
-settled. 16 must be refused *by name*, and 2 honest controls must clear. The contract answers in
+settled. 15 must be refused *by name*, and 2 honest controls must clear. The contract answers in
 its own words, decoded from its revert data: `StaleFixing`, `Underpaid`, `NotDebtor`,
 `WrongCycleState`.
 
