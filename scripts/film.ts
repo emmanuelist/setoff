@@ -13,7 +13,7 @@
  *   npm run film              # needs `npm run serve -- --live --short` warm
  */
 import { chromium, type Page } from "playwright";
-import { mkdirSync, rmSync, readdirSync } from "node:fs";
+import { mkdirSync, rmSync, readdirSync, writeFileSync } from "node:fs";
 import { CUES, CAPTION_RUNTIME } from "./captions.js";
 import { MOVES, POINTER_RUNTIME, TRAVEL_MS, resolveMoves, type Move } from "./pointer.js";
 import { CARDS, cardHTML, type Card } from "./card.js";
@@ -79,8 +79,13 @@ async function untilPainted(page: Page, minChars = 400, timeoutMs = 40_000) {
 async function untilSettled(page: Page, timeoutMs = 45_000) {
   const t0 = Date.now();
   for (;;) {
+    // Two signals: the skeleton plates carry aria-busy, and the masthead's block
+    // counter prints "reading…" until its first poll lands. Waiting only on
+    // aria-busy left "reading…" in shot at the head of every segment.
     const busy = await page
-      .evaluate(() => document.querySelectorAll("[aria-busy='true']").length)
+      .evaluate(() =>
+        document.querySelectorAll("[aria-busy='true']").length +
+        ((document.body?.innerText ?? "").includes("reading…") ? 1 : 0))
       .catch(() => 0);
     if (busy === 0) { process.stdout.write(`  settled (${((Date.now() - t0) / 1000).toFixed(1)}s)\n`); return; }
     if (Date.now() - t0 > timeoutMs) { process.stdout.write(`  ! still busy after ${timeoutMs / 1000}s\n`); return; }
@@ -297,6 +302,14 @@ async function main() {
   });
 
   for (const c of CARDS) await cardSegment(c);
+
+  // How long each segment spent setting up, so film-cut trims exactly that much
+  // and no more. Without this file the cut falls back to a fixed 1.6s, which
+  // leaves a different amount of page-load at the head of every segment — the
+  // picture then runs late against the voice by a different amount each time,
+  // which is precisely what "it does not sync" looks like.
+  writeFileSync(`${OUT}/setup.json`, JSON.stringify(setupTimes, null, 2));
+  console.log(`\nsetup times written: ${Object.entries(setupTimes).map(([k, v]) => `${k} ${v}s`).join(", ")}`);
 
   console.log("\nfilmed. next: npm run film:cut");
   process.exit(0);

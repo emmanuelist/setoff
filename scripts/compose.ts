@@ -60,12 +60,26 @@ for (const b of NARRATION) {
   // Each caption appears exactly while its sentence is spoken, plus a short
   // lead-in so the line lands a beat before the voice reaches it.
   const LEAD = 0.3;
+  const FADE = 0.22;   // a hard cut on a caption reads as a glitch, not an edit
   let last = "c0";
   cues.forEach((c, i) => {
     const from = Math.max(0, c.at - LEAD);
     const to = c.at + c.secs;
     const label = i === cues.length - 1 ? "vout" : `c${i + 1}`;
-    chain.push(`[${last}][${i + 2}:v]overlay=0:0:enable='between(t,${from.toFixed(2)},${to.toFixed(2)})'[${label}]`);
+    // Fade the caption's own alpha in and out, then hold it only for its window.
+    // The still has to be looped first: a single PNG is one frame, and fade
+    // needs a timeline to act on.
+    chain.push(
+      `[${i + 2}:v]loop=loop=-1:size=1:start=0,setpts=N/FRAME_RATE/TB,format=rgba,` +
+        `fade=t=in:st=0:d=${FADE}:alpha=1,` +
+        `fade=t=out:st=${Math.max(FADE, to - from - FADE).toFixed(2)}:d=${FADE}:alpha=1,` +
+        `trim=duration=${Math.max(FADE * 2, to - from).toFixed(2)},setpts=PTS-STARTPTS,` +
+        // Shift the caption's own clock to where it is shown, or its fade-in
+        // plays against the film's t=0 and is over before the caption appears.
+        `setpts=PTS+${from.toFixed(2)}/TB[cap${i}]`,
+      `[${last}][cap${i}]overlay=0:0:enable='between(t,${from.toFixed(2)},${to.toFixed(2)})':` +
+        `x=0:y=0:eof_action=pass[${label}]`,
+    );
     last = label;
   });
   if (!cues.length) chain.push(`[c0]null[vout]`);
