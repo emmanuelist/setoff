@@ -13,14 +13,20 @@
     "film:mix": "bash scripts/film-mix.sh",
     "film:master": "bash scripts/film-master.sh",
     "film:facts": "bash scripts/facts.sh",
-    "film:chrome": "tsx scripts/chrome.ts",
-    "film:compose": "tsx scripts/compose.ts",
-    "film:all": "npm run film:facts && npm run voice && npm run film && npm run film:cut && npm run voice && npm run film:chrome && npm run film:compose && npm run film:music && npm run film:mix && npm run film:master"
+    "film:all": "npm run film:facts && npm run voice && npm run film && npm run film:cut && npm run voice && npm run film:align && npm run film:render && npm run film:music && npm run film:mix && npm run film:master",
+    "film:align": "tsx scripts/align.ts",
+    "film:render": "tsx scripts/render.ts"
   },
   "devDependencies": {
+    "@remotion/bundler": "^4.0.491",
+    "@remotion/renderer": "^4.0.491",
     "@types/node": "^20",
+    "@types/react": "^19.3.0",
     "dotenv": "^17.4.2",
     "playwright": "1.62.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remotion": "^4.0.491",
     "tsx": "^4.23.13",
     "typescript": "^5"
   }
