@@ -80,20 +80,33 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       settled cycle.
       *Verified:* lint 0, typecheck 0, build green, `check-design` agrees, the impeccable
       detector is clean, rendered at 1440 and 390.
-      *Not shown yet:* a cycle in its Open, Fixed or Void state on mainnet. Phase 4 runs the
-      void.
-- [ ] **Phase 4 — The reversal (Oct 4).** A real mainnet cycle voided by an unfunded
-      party. Every deposit refunded, visible on-chain and in the app.
+      *Since shown on mainnet by Phase 4:* a cycle Open, Fixed and Void, and cycle #2 sitting
+      past its deadline in the state the app offers to void.
+- [x] **Phase 4 — The reversal.** Done 2026-09-23, eleven days early. Cycle #3 on mainnet:
+      two net debtors, one funded, one never did, voided after the deadline. C's 0.4279625
+      USDC deposit came back to the wei, and all three debts returned to the direct path
+      still endorsed. Receipts and the verification reads are in `docs/EVIDENCE.md`.
+      Drill: `scripts/mainnet/void.sh`.
 - [ ] **Phase 5 — Proof surface (Oct 5–6).** README as proof surface, deployed app, demo
       video, verified contracts, honest limits, all links clicked.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
       only what matters, then submit on DoraHacks with the claim verbatim.
 
-**Current phase:** 3 — built and committed, with the impeccable design passes run over the
+**Current phase:** 4 done; next is 5. Phases 1-4 are committed, with the design passes run over the
 app on 2026-09-22 (typeset, clarify, layout, harden, adapt, audit, animate, polish). The
 audit scored 17/20; its snapshot and the dismissed detector findings are in `.impeccable/`.
-Rendered and inspected at 1440 and 390 on the home, cycle and debt pages. Phase 4 (a real
-voided cycle on mainnet) follows.
+Rendered and inspected at 1440 and 390 on the home, cycle and debt pages.
+
+Phase 5 next: the README as a proof surface, the app deployed, the video. Two items carried in
+from Phase 3: the home page still blocks on every chain read before it paints (no route uses
+`Suspense`), which is the single biggest win left for a judge's first impression; and cycle #2
+is litter, `Open` and empty past its deadline, voidable by anyone.
+
+**Measured on 2026-09-23:** Arc's public RPC is load-balanced and **not read-your-writes
+consistent**: a read issued straight after a write can land on a node a block behind and be
+refused with `request beyond head block`. It cost one wasted `openCycle` (cycle #2, now litter).
+A local fork is a single consistent node and cannot reproduce it, so any mainnet script that
+reads after a write needs a retry.
 
 **Measured on 2026-09-22:** Arc's public RPC answers in about 1.4s per round trip, so a
 page costs one round trip per *wave* of reads, not per call — multicall batching is already

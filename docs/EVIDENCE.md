@@ -149,6 +149,59 @@ against cycle #1:
 - pay a netted debt directly, refused with `WrongState`;
 - open with a 5-minute funding window, refused with `InvalidSchedule`.
 
+## Phase 4: the reversal — a cycle voided by an unfunded party
+
+Cycle #3 on the milestone 2 contract, 2026-09-23. Two net debtors; one funded, one never did;
+the deadline passed and the cycle was voided, refunding the deposit in full. This is the "or
+none does" half of the claim, on-chain rather than in a test.
+
+**The cycle.** Opened by the deployer, cutoff 1790169640, funding deadline 1790170300
+(an 11-minute window; the contract's floor is 10 minutes).
+
+| Leg | Debt | Effect |
+| --- | --- | --- |
+| A bills C | USD 1.00 | C is a net debtor |
+| C bills A | EUR 0.50 | sets off against the leg above |
+| B bills D | USD 0.60 | D is a net debtor, and never funds |
+
+Gross **2.1720375 USDC** → net **1.0279625 USDC**, 52.7 % set off. Nets: A +0.4279625,
+C −0.4279625, B +0.6000000, D −0.6000000.
+
+| Step | By | Tx | Block | Gas |
+| --- | --- | --- | --- | --- |
+| openCycle #3 | deployer | [`0xe3dc9938…e7f1`](https://explorer.arc.io/tx/0xe3dc9938ea0510180dc47027ebc55749c044c4c40c871d93dea98ba17217e7f1) | 22,353,040 | 73,725 |
+| proposeInCycle #8 (USD 1.00) | A | [`0x3999471d…5ddd`](https://explorer.arc.io/tx/0x3999471dbb09aee72df410a42403d5610a33461004259f07d619204ec7ab5ddd) | 22,353,055 | 126,430 |
+| accept #8 | C | [`0x8d3afda5…39fc9`](https://explorer.arc.io/tx/0x8d3afda5005c4d7c28040d9c3ca3f8d8d16fa75671230a883f6c83a389039fc9) | 22,353,067 | 199,667 |
+| proposeInCycle #9 (EUR 0.50) | C | [`0x8ada99a1…96b2`](https://explorer.arc.io/tx/0x8ada99a1d56a3d6ba943a7e25d34bd7ae2ce6670a8417454c41215869abc96b2) | 22,353,074 | 128,615 |
+| accept #9 | A | [`0x78856944…ea73`](https://explorer.arc.io/tx/0x7885694405b65064c1705a884694503f16851c8891100b0ee465b9326d39ea73) | 22,353,087 | 74,939 |
+| proposeInCycle #10 (USD 0.60) | B | [`0xef67413d…16ca`](https://explorer.arc.io/tx/0xef67413d0f57e584036c7bd78b8dd498f917c08df45d38e7b6034e25583c16ca) | 22,353,095 | 126,430 |
+| accept #10 | D | [`0x334d7dc6…318b`](https://explorer.arc.io/tx/0x334d7dc6023a3500a3fb9a791e5266832a65cb744f17ba5b3fcc2b0f1135318b) | 22,353,107 | 162,667 |
+| fixCycle #3 | deployer | [`0xdd53bb10…5a2d`](https://explorer.arc.io/tx/0xdd53bb10cb2fd5997a1ff8e4b3c9a0d93a166f5279aa4df7703cca8797675a2d) | 22,353,518 | 373,799 |
+| fund 0.4279625 | C | [`0x125ef0d4…00c2`](https://explorer.arc.io/tx/0x125ef0d4e595fbe4f6b36f1f25b59da2c644bac637dd6656401a7b4a8da600c2) | 22,353,537 | 81,277 |
+| **voidCycle #3** (D never funded) | deployer | [`0x5ec942bf…0e3b`](https://explorer.arc.io/tx/0x5ec942bfc6c3f551fed264e1477c9b11a098f233708de501242d15564d360e3b) | 22,354,816 | 124,776 |
+| withdraw the refund | C | [`0xf3e82a99…bbe6`](https://explorer.arc.io/tx/0xf3e82a9938916529f433e0d1fa901c086267c0c69f4917947f060d0747bfbbe6) | 22,354,822 | 31,959 |
+
+**Verified after the void, by reading the chain rather than trusting the script:**
+
+- Cycle #3: state `Void`, `fixedAt` 1790169646, `closedAt` 1790170304, `debtors` 2, `funded` 1, `held` 0.
+- **The refund is exact.** C's balance fell 0.0088745118 USDC, and C's four transactions came
+  to 441,518 gas at 20.1 Gwei = 8,874,511,800,000,000 wei — the same number. The 0.4279625
+  deposit came back to the wei. D paid only its one transaction's gas.
+- Debts #8, #9 and #10 are all `Accepted` with `cycleId` 0 and `closedAt` 0: still endorsed,
+  off the cycle, back on the direct path.
+- Contract balance 0, `totalHeld` 0, every party's `withdrawable` 0. Nothing stranded.
+
+Whole drill: 1,504,284 gas ≈ 0.0302 USDC.
+
+**Cycle #2 is litter from a first attempt** that died on an RPC read (see below). It is `Open`,
+empty and past its deadline, so it is voidable by anyone.
+
+**The public RPC is load-balanced and not read-your-writes consistent.** The first run sent
+`openCycle`, took its receipt, then read `cycleCount()` and was refused with
+`request beyond head block: requested 22352770, head 22352769` — the read landed on a node a
+block behind the one that returned the receipt. A single local fork node cannot reproduce this.
+Any script that reads straight after a write needs a retry.
+
 ## Returning funds to Binance
 
 Binance completed USDC deposit support on Arc on 2026-09-16, and the return path is verified
@@ -183,4 +236,6 @@ What it establishes:
 | A real five-currency cycle, end to end (open, 5 debts, fix, 2 fundings, settle, 2 withdrawals) | 0.0516 USDC in gas (2,394,253 gas over 17 transactions) | cycle #1 receipts |
 | One debt, propose → accept → pay → withdraw | 0.00635 USDC | four receipts above |
 | Gas floor | 20 Gwei | Arc docs; `eth_gasPrice` |
+| A cycle voided after a fixing (2 parties, 3 debts) | 124,776 gas | cycle #3 void |
+| Enrol, fix, fund, void and refund a 3-debt cycle | 1,504,284 gas ≈ 0.0302 USDC | cycle #3 receipts |
 | Logs per native transfer | 1, from `0xffff…fffe`, 18 decimals | receipts `0x321cc700…`, `0x97c1…23c3` |
