@@ -15,7 +15,8 @@
     "film:facts": "bash scripts/facts.sh",
     "film:all": "npm run film:facts && npm run voice && npm run film && npm run film:cut && npm run voice && npm run film:align && npm run film:render && npm run film:music && npm run film:mix && npm run film:master",
     "film:align": "tsx scripts/align.ts",
-    "film:render": "tsx scripts/render.ts"
+    "film:render": "tsx scripts/render.ts",
+    "logo": "tsx scripts/logo.ts"
   },
   "devDependencies": {
     "@remotion/bundler": "^4.0.491",
