@@ -59,3 +59,54 @@ No audit. The four parties are wallets I control, though every function is open.
 Netting is how CLS settles FX and how every clearing house works. What has not existed is a version where the parties can check the net themselves and nobody has to go first. That needs one agreed price, atomic settlement, and no privileged operator, all at once. This is a small working instance of exactly that.
 
 The real version needs local-currency payout, which StableFX and MXNB, BRLA and JPYC make possible without changing the clearing logic, because the netting already happens in a common unit. It needs a way to enrol counterparties who are not already on-chain. It needs a cycle bigger than one block without losing atomicity, which is the first thing I would work on. And it needs an audit before anything with a real balance sheet touches it.
+
+
+---
+
+# The Submission step
+
+Kept with the Details body so every answer stays next to the figures it quotes.
+
+**Link to your live deployment on Arc mainnet**
+
+```
+https://setoff-omega.vercel.app
+```
+
+**Arc mainnet contract address or a transaction hash we can verify**
+
+```
+Contract: 0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6
+https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6
+Sourcify exact match (runtime and creation): https://sourcify.dev/server/v2/contract/5042/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6
+
+A cycle that settled, five debts netted in one transaction:
+https://explorer.arc.io/tx/0x6f840be9a2501cb80d4223ca7690577b987522c1bf5b7513a418c45f0d0ba10d
+
+A cycle that was voided, the funded deposit refunded in full:
+https://explorer.arc.io/tx/0x5ec942bfc6c3f551fed264e1477c9b11a098f233708de501242d15564d360e3b
+```
+
+**In two sentences, what does your project do?**
+
+```
+Debts in five currencies clear at one on-chain fixing: only the net moves, and either every party settles or none does. Each debt is endorsed by the party who owes it, priced once at a single Chainlink fixing on Arc mainnet, and settled in one transaction, or voided with every deposit refunded if any party fails to fund.
+```
+
+**What does it use Arc for?**
+
+```
+Arc is the settlement layer, and the design depends on it. USDC is Arc's native currency, so net debtors fund with plain native payments: no ERC-20 approvals, no allowances, and gas paid in the same unit as the debt. Payouts are withdrawals because an Arc native transfer can revert even with sufficient balance, so one blocked account can only ever block itself. Instant finality is what makes all-or-nothing settlement enforceable rather than probabilistic. Prices come from the Chainlink EUR, MXN, BRL and JPY feeds live on Arc, and every fixing stores its answer, round ID and update time on-chain.
+```
+
+**Anything else we should see?**
+
+```
+The refusal room, https://setoff-omega.vercel.app/refusals. Press "Run every attempt" and 17 attempts run against the live contract as read-only calls: 15 must be refused by name, and 2 honest controls must clear.
+
+The voided cycle, https://setoff-omega.vercel.app/cycles/3, is the half of the claim that tests usually skip. One net debtor never funded, the cycle was voided at the deadline, and the funded party's 0.4279625 USDC came back to the wei.
+
+Every mainnet transaction, with gas and receipts, is in docs/EVIDENCE.md. 56 contract tests including 7 invariants, instrumented to prove they actually reach settle and void. Milestone 1's contract, 0xcbEb5Cf09d311f69D7FdF71F80A6BfE513333ce7, stays on-chain as its own record.
+
+Limits, stated plainly: no audit, the four demo parties are my own wallets, and creditors are paid in USDC at the fixing rather than in local currency.
+```
