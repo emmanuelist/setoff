@@ -85,10 +85,10 @@ async function Aside({ r }: { r: Reads }) {
   const openedAt = debts.length ? Math.min(...debts.map((d) => d.proposedAt)) : cycle.cutoff - 600;
   return (
     <div className="col-span-12 grid content-start gap-[var(--seam)] lg:col-span-4">
-      <Plate legend="Schedule" aside={<span className="legend">Chain time</span>}>
+      <Plate id="schedule" legend="Schedule" aside={<span className="legend">Chain time</span>}>
         <CycleTimer openedAt={openedAt} cutoff={cycle.cutoff} deadline={cycle.fundingDeadline} fixedAt={cycle.fixedAt} closedAt={cycle.closedAt} state={cycle.state} readAt={now} />
       </Plate>
-      <Plate legend="Next act">
+      <Plate id="next-act" legend="Next act">
         <CycleActions
           readAt={now}
           cycle={{
@@ -98,7 +98,7 @@ async function Aside({ r }: { r: Reads }) {
           }}
         />
       </Plate>
-      <Plate legend="On the chain" aside="Every step is a transaction">
+      <Plate id="trail" legend="On the chain" aside="Every step is a transaction">
         <ol className="grid gap-3 text-small">
         <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Opened</span></span><TxLink hash={trail.opened}><span className="fig">{trail.opened ? short(trail.opened) : "—"}</span></TxLink><span className="text-caption text-graphite">by <Party address={cycle.opener} /></span></li>
         <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Fixed</span></span><TxLink hash={trail.fixed}><span className="fig">{trail.fixed ? short(trail.fixed) : "—"}</span></TxLink><span className="text-caption text-graphite">{cycle.fixedAt ? <>gross <span className="fig">{formatUsdc(cycle.gross, 4)}</span>, net <span className="fig">{formatUsdc(cycle.netMoved, 4)}</span> USDC</> : "not yet"}</span></li>

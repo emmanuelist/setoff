@@ -69,7 +69,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
             {running ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Play aria-hidden="true" />}
             {running ? "Running…" : "Run every attempt"}
           </button>
-          <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small text-graphite" aria-live="polite">
+          <p id="run-count" className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small text-graphite" aria-live="polite">
             <span><NumberFlow value={ran.length} className="fig text-figure-m text-ink" /> of <span className="fig">{all.length}</span> run</span>
             <span className={surprises ? "font-semibold text-ink" : ""}><NumberFlow value={surprises} className="fig text-figure-m text-ink" /> off their rule</span>
             {failed > 0 && <span className="font-semibold text-ink"><span className="fig text-figure-m">{failed}</span> couldn&apos;t run</span>}
@@ -115,7 +115,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
         ))}
       </div>
 
-      <aside className="plate col-span-12 self-start p-5 sm:p-6 lg:sticky lg:top-[var(--seam)] lg:col-span-5 lg:col-start-8 lg:row-start-2" aria-label="Recorder tape">
+      <aside className="plate col-span-12 self-start p-5 sm:p-6 lg:sticky lg:top-[var(--seam)] lg:col-span-5 lg:col-start-8 lg:row-start-2" id="tape" aria-label="Recorder tape">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="legend">Recorder tape</h2>
           {current && (current.result === "refused" ? <span className="impress impress-late impress-sm">Refused</span> : <span className="print text-caption">CLEARS</span>)}
