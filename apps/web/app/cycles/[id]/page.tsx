@@ -37,7 +37,9 @@ async function Statement({ r }: { r: Reads }) {
   if (debts.length === 0) {
     return (
       <div className="well grid gap-2 p-6 text-body text-graphite">
-        <p>No debt has joined this cycle yet. A creditor bills into it, and the debt joins when its debtor endorses.</p>
+        <p>{cycle.state === "open"
+          ? "No debt has joined this cycle yet. A creditor bills into it, and the debt joins when its debtor endorses."
+          : "No debt joined this cycle before its cutoff, so it was never priced and never held a deposit."}</p>
       </div>
     );
   }

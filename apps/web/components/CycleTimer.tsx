@@ -22,7 +22,12 @@ export function CycleTimer({ openedAt, cutoff, deadline, fixedAt, closedAt, stat
 
   const stage =
     state === "settled" ? { word: "Settled", line: `at ${stamp(closedAt ?? 0, now)}. Every net debtor funded, so every debt was netted at once.` }
-    : state === "void" ? { word: "Voided", line: `at ${stamp(closedAt ?? 0, now)}. Someone didn't fund, so every deposit became refundable.` }
+    : state === "void"
+      // Only a cycle that was fixed can have been underfunded. One voided without a
+      // fixing never priced a debt or held a deposit, and must not say otherwise.
+      ? fixedAt
+        ? { word: "Voided", line: `at ${stamp(closedAt ?? 0, now)}. Someone didn't fund, so every deposit became refundable.` }
+        : { word: "Voided", line: `at ${stamp(closedAt ?? 0, now)}. It was never fixed, so nothing was priced and no deposit was ever held.` }
     : now >= deadline ? { word: "Past its deadline", line: "Someone hasn't funded. Anyone can void it now, and every deposit comes back." }
     : state === "fixed" ? { word: "Fixed", line: `Net debtors fund until the deadline, in ${span(deadline - now)}.` }
     : now >= cutoff ? { word: "At the cutoff", line: `Enrolment is closed. Anyone can fix it now; funding closes in ${span(deadline - now)}.` }
