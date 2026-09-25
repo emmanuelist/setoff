@@ -57,7 +57,7 @@ The one check that cannot be done from this machine, and the one that catches re
 - [ ] The limits section is present and true
 - [ ] No figure in the README, the film or the form that the chain does not hold
       (`npm run film:facts` regenerates every number the script is allowed to say)
-- [ ] Cycle #2 — the empty, expired one — is voided or explained
+- [x] Cycle #2, the empty expired one, voided on 2026-09-25 (`0x985c2634…216f`)
 
 ## The state at submission
 

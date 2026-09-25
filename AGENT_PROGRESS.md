@@ -107,8 +107,8 @@ its own slice inside a `Suspense` boundary, so the shell paints first. **Home TT
 the cycle page 4.44s → 0.40s.** `/debts/[id]` (1.7s) and `/cycles` (1.4s) are each a single wave
 and still block; stream them the same way if they ever matter.
 
-Phase 5 next: the README as a proof surface, the app deployed, the video. Carried in: cycle #2 is
-litter, `Open` and empty past its deadline, voidable by anyone.
+Phase 5 next: the README as a proof surface, the app deployed, the video. Cycle #2, the litter
+from a failed first run, was voided on 2026-09-25.
 
 **Measured on 2026-09-23:** Arc's public RPC is load-balanced and **not read-your-writes
 consistent**: a read issued straight after a write can land on a node a block behind and be

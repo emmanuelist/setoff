@@ -193,8 +193,12 @@ C −0.4279625, B +0.6000000, D −0.6000000.
 
 Whole drill: 1,504,284 gas ≈ 0.0302 USDC.
 
-**Cycle #2 is litter from a first attempt** that died on an RPC read (see below). It is `Open`,
-empty and past its deadline, so it is voidable by anyone.
+**Cycle #2 was litter from a first attempt** that died on an RPC read (see below): opened, empty,
+and left `Open` past its deadline. Voided on 2026-09-25 by the deployer in
+[`0x985c2634…216f`](https://explorer.arc.io/tx/0x985c26341dfa6c1db6c48c9766afe7513cee6f6aeda6f682b0e2caca08f6216f),
+block 22,761,401, 37,787 gas (0.0007595 USDC). It had no debts and no parties, so nothing was
+refunded: state `Void`, `held` 0. It is the second void path on mainnet, a cycle closed without
+ever being fixed, next to cycle #3's fixed-then-underfunded one.
 
 **The public RPC is load-balanced and not read-your-writes consistent.** The first run sent
 `openCycle`, took its receipt, then read `cycleCount()` and was refused with
