@@ -57,18 +57,23 @@ export function CycleStatement({
 
   useEffect(() => {
     if (!inView) return;
-    const t = setTimeout(() => setSetOff(true), reduce ? 0 : 900);
+    // On first view the figure already reads gross, so it can set off quickly. On a replay it
+    // first has to roll back up to the gross, which takes 1.4s; setting off at 0.9s reversed the
+    // roll mid-way and the gross was never actually shown. Hold it for a beat once it lands.
+    const t = setTimeout(() => setSetOff(true), reduce ? 0 : run > 0 ? 2000 : 900);
     return () => clearTimeout(t);
   }, [inView, reduce, run]);
 
   const rows = parties.map((p) => ({ ...p, ...sides(p.party, debts) }));
-  const max = rows.reduce((m, r) => (r.owesTotal > m ? r.owesTotal : r.owedTotal > m ? r.owedTotal : m), 0n);
+  // The widest single side sets the scale. The old ternary skipped a row's owed side whenever its
+  // owes side alone beat the running max, so a row owing a little and owed a lot could overrun.
+  const max = rows.reduce((m, r) => [r.owesTotal, r.owedTotal].reduce((a, b) => (b > a ? b : a), m), 0n);
   const currencies = [...new Set(debts.map((d) => d.currency))];
   const setOffPct = gross === 0n ? "0.0" : roundDecimal(formatUnits(((gross - netMoved) * 1000n) / gross, 1), 1);
   const replay = () => { setSetOff(false); setRun((n) => n + 1); };
 
   return (
-    <div ref={root} id="statement" className="grid gap-7">
+    <div ref={root} id="statement" data-set-off={setOff ? "net" : "gross"} className="grid gap-7">
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         {/* The unit sits on the figure's baseline and says what the figure is at each moment. */}
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
