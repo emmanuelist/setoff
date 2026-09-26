@@ -14,7 +14,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { config as dotenv } from "dotenv";
-import { NARRATION } from "./narration.js";
+import { NARRATION, spokenLine } from "./narration.js";
 import { sentences } from "./captions.js";
 
 dotenv({ path: new URL("../.env", import.meta.url).pathname, quiet: true });
@@ -49,7 +49,7 @@ async function main() {
   let called = 0, cached = 0;
   for (const b of NARRATION) {
     const lines = timing[b.segment] ?? [];
-    const spoken = sentences(b.say ?? b.text);
+    const spoken = sentences(b.text).map(spokenLine);
     out[b.segment] = [];
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!;
