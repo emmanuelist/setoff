@@ -44,7 +44,7 @@ export function DebtLedger({ debts, priced, next }: { debts: Debt[]; priced: Map
               className={`stock ccy-${d.currency.toLowerCase()} group relative grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 transition-[transform,box-shadow] duration-200 ease-spring hover:-translate-y-[3px] hover:shadow-[0_0_0_1px_rgb(29_27_24/0.1),0_22px_30px_-20px_rgb(29_27_24/0.65)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink md:gap-4 ${COLS}`}
             >
               <span role="cell" className="text-caption">
-                <Link href={`/debts/${d.id}`} className="no-underline outline-none after:absolute after:inset-0 after:content-['']" aria-label={`Debt ${d.id}, ${d.currency} ${formatAmount(d.amount, d.currency)}, ${d.state}`}>
+                <Link href={`/debts/${d.id}`} className="no-underline outline-none after:absolute after:inset-0 after:content-['']" aria-label={`Debt ${pad(d.id, 4)}, ${d.currency} ${formatAmount(d.amount, d.currency)}, ${d.state}`}>
                   <ClearBand id={d.id} />
                 </Link>
               </span>
@@ -69,10 +69,13 @@ export function DebtLedger({ debts, priced, next }: { debts: Debt[]; priced: Map
             </div>
           );
         })}
-        {next !== null && <Link href="/debts/new" className="flex min-h-[58px] flex-wrap items-center justify-between gap-x-4 gap-y-1.5 rounded-card py-3 border border-dashed border-ink/25 px-4 text-small text-graphite no-underline transition-colors hover:border-ink/50 hover:text-ink">
-          <span>The next slot: debt <span className="fig text-ink">{pad(next, 4)}</span>, numbered when its creditor signs.</span>
-          <span className="inline-flex items-center gap-1.5 font-semibold whitespace-nowrap text-ink">Record it <ArrowRight className="size-3.5" aria-hidden="true" /></span>
-        </Link>}
+        {/* The empty slot is a row of the table too, one cell wide, so the rowgroup holds only rows. */}
+        {next !== null && <div role="row" className="contents"><div role="cell" className="contents">
+          <Link href="/debts/new" className="flex min-h-[58px] flex-wrap items-center justify-between gap-x-4 gap-y-1.5 rounded-card py-3 border border-dashed border-ink/25 px-4 text-small text-graphite no-underline transition-colors hover:border-ink/50 hover:text-ink">
+            <span>The next slot: debt <span className="fig text-ink">{pad(next, 4)}</span>, numbered when its creditor signs.</span>
+            <span className="inline-flex items-center gap-1.5 font-semibold whitespace-nowrap text-ink">Record it <ArrowRight className="size-3.5" aria-hidden="true" /></span>
+          </Link>
+        </div></div>}
       </div>
     </div>
   );
