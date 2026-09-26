@@ -30,7 +30,7 @@ The same sentence, word for word, or the repetition stops working:
 ## Links, each one clicked
 
 - [ ] Live app — <https://setoff-omega.vercel.app>
-- [ ] Demo film — <https://youtu.be/4KKoGLYV9E0> — **Unlisted, not Private**
+- [ ] Demo film — <https://youtu.be/7cHp11TsOQE> — **Unlisted, not Private**
 - [ ] Contract on the explorer, and its Sourcify exact match
 - [ ] The settled cycle and the voided cycle transactions
 - [ ] CI badge green
@@ -67,7 +67,7 @@ The one check that cannot be done from this machine, and the one that catches re
 | Proved on-chain | a cycle settled at 94.5 % set off, and a cycle voided with the deposit refunded to the wei |
 | Tests | 56 passing, 7 invariants, reach instrumented |
 | App | deployed, streaming, read-only without a wallet |
-| Film | 1:41, 1920×1080, word-level captions |
+| Film | 1:43, 1920×1080, word-timed captions, scored, −16 LUFS |
 
 ## If something is wrong at the last minute
 

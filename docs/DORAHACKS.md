@@ -13,7 +13,7 @@ to the repo, so it repeats the proof rather than pointing at it.
 
 Live on Arc mainnet. There is no backend and no database: the chain is the only store, and every figure in the app is a contract read, an event, or a Chainlink answer. Nothing below is a mockup.
 
-**[Live app](https://setoff-omega.vercel.app)** · **[Repo](https://github.com/emmanuelist/setoff)** · **[Contract, Sourcify verified](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)**
+**[Demo film, 1:43](https://youtu.be/7cHp11TsOQE)** · **[Live app](https://setoff-omega.vercel.app)** · **[Repo](https://github.com/emmanuelist/setoff)** · **[Contract, Sourcify verified](https://explorer.arc.io/address/0x8A78B1F880eA21dAe046Ff22De9Ccc21027680d6)**
 
 ## The problem
 

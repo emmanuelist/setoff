@@ -91,7 +91,9 @@ Decisions log: `docs/DECISIONS.md`. Research: `docs/RESEARCH.md`.
       *Done:* README rebuilt as a proof surface with every link checked; MIT LICENSE and a
       CI workflow that runs the app gate (green); app deployed to
       <https://setoff-omega.vercel.app>; demo filmed and published at
-      <https://youtu.be/4KKoGLYV9E0> (1:41, 1920x1080, word-level captions).
+      <https://youtu.be/7cHp11TsOQE> (1:43, 1920x1080). Rebuilt 2026-09-26: captions carry
+      the chain's exact figures, key moments are measured from the footage, nothing zooms,
+      and the sound is a written score.
       *Left:* the honest-limits pass over the submission copy, and a read of the whole
       README from a cold browser on a phone.
 - [ ] **Phase 6 — Benchmark and submit (Oct 7).** Pressure-test against the rubric, fix
