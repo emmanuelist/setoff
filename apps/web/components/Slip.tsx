@@ -21,9 +21,10 @@ const DOTS: Record<string, string[]> = {
 
 /** Real perforation: the word's dots are subtracted from the card, so whatever lies beneath shows through. */
 function perforationMask(word = "PAID", pitch = 6, r = 2.1) {
-  let x = 0, circles = "";
-  for (const ch of word) { DOTS[ch].forEach((row, y) => [...row].forEach((b, i) => { if (b === "1") circles += `<circle cx='${x + i * pitch + pitch / 2}' cy='${y * pitch + pitch / 2}' r='${r}'/>`; })); x += pitch * 6; }
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${x - pitch}' height='${7 * pitch}'>${circles}</svg>`;
+  // Each hole a zero-length round-capped stroke: one path, not a circle per hole.
+  let x = 0, d = "";
+  for (const ch of word) { DOTS[ch].forEach((row, y) => [...row].forEach((b, i) => { if (b === "1") d += `M${x + i * pitch + pitch / 2} ${y * pitch + pitch / 2}h0`; })); x += pitch * 6; }
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${x - pitch}' height='${7 * pitch}'><path d='${d}' stroke='#000' stroke-width='${2 * r}' stroke-linecap='round'/></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
