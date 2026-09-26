@@ -69,7 +69,7 @@ export function RefusalRoom({ ctx, head, cannot }: { ctx: RoomContext; head: Rea
             {running ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Play aria-hidden="true" />}
             {running ? "Running…" : "Run every attempt"}
           </button>
-          <p id="run-count" className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small text-graphite" aria-live="polite">
+          <p id="run-count" data-ran={ran.length} data-off={surprises} data-failed={failed} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small text-graphite" aria-live="polite">
             <span><NumberFlow value={ran.length} className="fig text-figure-m text-ink" /> of <span className="fig">{all.length}</span> run</span>
             <span className={surprises ? "font-semibold text-ink" : ""}><NumberFlow value={surprises} className="fig text-figure-m text-ink" /> off their rule</span>
             {failed > 0 && <span className="font-semibold text-ink"><span className="fig text-figure-m">{failed}</span> couldn&apos;t run</span>}
