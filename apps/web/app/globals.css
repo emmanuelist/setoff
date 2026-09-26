@@ -159,15 +159,19 @@
     font-size: 15px;
     line-height: 1.45;
     color: var(--ink);
-    background:
-      radial-gradient(120% 60% at 50% -10%, rgb(255 255 255 / 0.55), transparent 70%),
-      var(--wall);
-    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     min-height: 100svh;
     display: flex;
     flex-direction: column;
     caret-color: var(--ink);
+  }
+  /* The light over the wall, fixed to the viewport. On its own fixed layer the compositor carries
+     it; as a `background-attachment: fixed` on body it forced the whole screen to repaint and
+     re-rasterise on every frame of a scroll, which is what made phones drag. The wall colour is
+     the root's (html) background, so this sits between the wall and everything on it. */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(120% 60% at 50% -10%, rgb(255 255 255 / 0.55), transparent 70%);
   }
   main { flex: 1; }
   a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
