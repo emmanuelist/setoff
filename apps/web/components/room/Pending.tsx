@@ -15,7 +15,8 @@ export function Pending({ legend, aside, className, rows = 3, height }: {
 }) {
   return (
     <Plate legend={legend} aside={aside} className={className} aria-busy="true">
-      <div className="well relative grid content-start gap-3 overflow-hidden p-4" style={height ? { minHeight: height } : undefined}>
+      {/* The well fills whatever height the plate reserves, so a tall placeholder reads as one instrument. */}
+      <div className="well relative grid flex-1 content-start gap-3 overflow-hidden p-4" style={height ? { minHeight: height } : undefined}>
         {Array.from({ length: rows }, (_, i) => (
           <span
             key={i}

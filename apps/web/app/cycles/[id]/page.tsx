@@ -102,7 +102,8 @@ async function Aside({ r }: { r: Reads }) {
         <ol className="grid gap-3 text-small">
         <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Opened</span></span><TxLink hash={trail.opened}><span className="fig">{trail.opened ? short(trail.opened) : "—"}</span></TxLink><span className="text-caption text-graphite">by <Party address={cycle.opener} /></span></li>
         <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents"><span className="legend row-span-2">Fixed</span></span><TxLink hash={trail.fixed}><span className="fig">{trail.fixed ? short(trail.fixed) : "—"}</span></TxLink><span className="text-caption text-graphite">{cycle.fixedAt ? <>gross <span className="fig">{formatUsdc(cycle.gross, 4)}</span>, net <span className="fig">{formatUsdc(cycle.netMoved, 4)}</span> USDC</> : "not yet"}</span></li>
-        <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-0.5 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents">
+        {/* Two funding links stack here; 8px between them keeps each a separate touch target. */}
+        <li className="grid grid-cols-[76px_1fr] items-baseline gap-x-3 gap-y-2 border-b border-rule pb-3 last:border-0 last:pb-0"><span className="contents">
           <span className="legend row-span-3">Funded</span></span>
           {trail.funded.length === 0 ? <span className="text-graphite">{cycle.fixedAt ? `${cycle.funded} of ${cycle.debtors}` : "not yet"}</span> : trail.funded.map((f) => (
             <TxLink key={f.tx} hash={f.tx}><Party address={f.party} /> <span className="fig">{formatUsdc(f.usdc, 4)}</span> <span className="text-graphite">USDC</span></TxLink>
@@ -156,11 +157,20 @@ export default async function CyclePage({ params }: PageProps<"/cycles/[id]">) {
     <main className="px-[var(--gutter)] pt-[var(--seam)]">
       <h1 className="sr">Cycle {id}</h1>
       <div className="bento">
-        <Suspense fallback={<Pending legend="Cycles" aside={`Cycle ${pad(BigInt(id), 4)}`} className="col-span-12 lg:col-span-8" rows={5} height={320} />}>
+        {/* Each placeholder holds the height its plate lands at, measured per breakpoint on cycles 1
+            and 3. A 400px placeholder under a 1000px statement pushed every plate below it down the
+            phone's screen when the chain answered, a layout shift of 0.27. */}
+        <Suspense fallback={<Pending legend="Cycles" aside={`Cycle ${pad(BigInt(id), 4)}`} className="col-span-12 min-h-[970px] sm:min-h-[785px] lg:col-span-8 lg:min-h-[845px]" rows={5} />}>
           <StatementPlate r={r} />
         </Suspense>
 
-        <Suspense fallback={<div className="col-span-12 grid content-start gap-[var(--seam)] lg:col-span-4"><Pending legend="Schedule" rows={2} /><Pending legend="Next act" rows={2} /><Pending legend="On the chain" rows={4} /></div>}>
+        <Suspense fallback={
+          <div className="col-span-12 grid content-start gap-[var(--seam)] lg:col-span-4">
+            <Pending legend="Schedule" rows={2} className="min-h-[203px] sm:min-h-[169px] lg:min-h-[211px]" />
+            <Pending legend="Next act" rows={2} className="min-h-[141px] sm:min-h-[127px] lg:min-h-[149px]" />
+            <Pending legend="On the chain" rows={4} className="min-h-[310px]" />
+          </div>
+        }>
           <Aside r={r} />
         </Suspense>
 

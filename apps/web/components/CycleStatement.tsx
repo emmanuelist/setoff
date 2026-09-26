@@ -85,12 +85,16 @@ export function CycleStatement({
             className={`fig leading-none font-medium tracking-[-0.02em] ${compact ? "text-figure-xl" : "text-figure-hero"}`}
             aria-hidden="true"
           />
-          <span className="text-lead leading-tight text-graphite sm:text-heading" aria-hidden="true">
-            {setOff
-              ? outcome === "void" ? <>USDC would have moved,<br className="sm:hidden" /> had every party funded</>
-              : outcome === "settled" ? "USDC moved"
-              : "USDC moves"
-              : <>USDC owed, gross,<br className="sm:hidden" /> in {currencies.length} {currencies.length === 1 ? "currency" : "currencies"}</>}
+          {/* Both labels share one cell, so the cell is always as tall as the longer: on a phone the
+              gross label is two lines and the net one, and swapping them used to pull everything
+              below up by a line mid-animation. */}
+          <span className="grid text-lead leading-tight text-graphite sm:text-heading" aria-hidden="true">
+            <span className="col-start-1 row-start-1 transition-opacity duration-300" style={{ opacity: setOff ? 0 : 1 }}>
+              USDC owed, gross,<br className="sm:hidden" /> in {currencies.length} {currencies.length === 1 ? "currency" : "currencies"}
+            </span>
+            <span className="col-start-1 row-start-1 transition-opacity duration-300" style={{ opacity: setOff ? 1 : 0 }}>
+              {outcome === "void" ? <>USDC would have moved,<br className="sm:hidden" /> had every party funded</> : outcome === "settled" ? "USDC moved" : "USDC moves"}
+            </span>
           </span>
           <p className="sr">
             {formatUsdc(gross, 4)} USDC was owed gross across {currencies.length} currencies; {setOffPct}% of it set off, leaving {formatUsdc(netMoved, 4)} USDC{outcome === "void" ? " that would have moved, had every party funded. The cycle was voided and every deposit refunded." : outcome === "settled" ? " that moved." : " to move."}
@@ -223,10 +227,12 @@ function Beam({ side, segments, max, setOff, net, reduce, delay }: { side: "owes
           />
         ))}
       </motion.div>
+      {/* The net grows out of the zero line by scale, not width, so it never re-lays-out the row. */}
       <motion.span
-        className={`absolute top-1/2 h-3 -translate-y-1/2 bg-ink ${left ? "right-0" : "left-0"}`}
+        className={`absolute top-1/2 h-3 bg-ink ${left ? "right-0" : "left-0"}`}
+        style={{ width: `${pct(net, max)}%`, y: "-50%", transformOrigin: left ? "right center" : "left center" }}
         initial={false}
-        animate={{ width: setOff ? `${pct(net, max)}%` : "0%" }}
+        animate={{ scaleX: setOff ? 1 : 0 }}
         transition={{ duration: reduce ? 0 : 1.1, ease, delay: reduce ? 0 : delay }}
       />
     </div>
