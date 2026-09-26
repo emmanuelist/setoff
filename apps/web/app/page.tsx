@@ -55,17 +55,13 @@ function reads() {
     return best ? readCycle(best.id) : null;
   });
 
-  // A cycle's debts are priced at its fixing; everything else is quoted or has a receipt.
-  const priced = Promise.all([base, latest]).then(async ([[, debts], view]) => {
-    const values = new Map<bigint, bigint>();
-    if (view && view.valuation.basis === "fixing") for (const [k, v] of view.valuation.values) values.set(k, v);
+  // Receipts and quotes need only the debts, so they go out beside the cycle read rather than after
+  // it: waiting for the cycle first cost the ledger a whole extra round trip to the RPC.
+  const direct = base.then(async ([, debts]) => {
     const out = new Map<bigint, Priced>();
     await Promise.all(
       debts.map(async (d) => {
-        if (d.state === "netted" || (d.cycleId !== 0 && values.has(d.id))) {
-          const v = values.get(d.id);
-          out.set(d.id, v !== undefined ? { kind: "paid", usdc: v } : null);
-        } else if (d.state === "paid") {
+        if (d.state === "paid") {
           const r = await readReceipt(d);
           out.set(d.id, r ? { kind: "paid", usdc: r.usdc } : null);
         } else if (d.state === "accepted") {
@@ -74,6 +70,22 @@ function reads() {
         }
       }),
     );
+    return out;
+  });
+
+  // A cycle's debts are priced at its fixing; everything else is quoted or has a receipt.
+  const priced = Promise.all([base, latest, direct]).then(([[, debts], view, direct]) => {
+    const values = new Map<bigint, bigint>();
+    if (view && view.valuation.basis === "fixing") for (const [k, v] of view.valuation.values) values.set(k, v);
+    const out = new Map<bigint, Priced>();
+    for (const d of debts) {
+      if (d.state === "netted" || (d.cycleId !== 0 && values.has(d.id))) {
+        const v = values.get(d.id);
+        out.set(d.id, v !== undefined ? { kind: "paid", usdc: v } : null);
+      } else if (direct.has(d.id)) {
+        out.set(d.id, direct.get(d.id)!);
+      }
+    }
     return { debts, priced: out, values };
   });
 
