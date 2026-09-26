@@ -8,15 +8,16 @@
     "design": "node scripts/check-design.mjs --strict",
     "film": "tsx scripts/film.ts",
     "film:cut": "bash scripts/film-cut.sh",
+    "film:measure": "tsx scripts/measure.ts",
     "voice": "tsx scripts/voice.ts",
-    "film:music": "bash scripts/film-music.sh",
-    "film:mix": "bash scripts/film-mix.sh",
     "film:master": "bash scripts/film-master.sh",
     "film:facts": "bash scripts/facts.sh",
-    "film:all": "npm run film:facts && npm run voice && npm run film && npm run film:cut && npm run voice && npm run film:align && npm run film:render && npm run film:music && npm run film:mix && npm run film:master",
+    "film:all": "npm run film:facts && npm run voice && npm run film:align && npm run film && npm run film:cut && npm run film:measure && npm run film:render && npm run film:score && npm run film:master",
     "film:align": "tsx scripts/align.ts",
     "film:render": "tsx scripts/render.ts",
-    "logo": "tsx scripts/logo.ts"
+    "logo": "tsx scripts/logo.ts",
+    "film:score": "tsx scripts/score.ts",
+    "film:stills": "tsx scripts/stills.ts"
   },
   "devDependencies": {
     "@remotion/bundler": "^4.0.491",
