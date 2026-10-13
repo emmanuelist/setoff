@@ -206,28 +206,6 @@ ever being fixed, next to cycle #3's fixed-then-underfunded one.
 block behind the one that returned the receipt. A single local fork node cannot reproduce this.
 Any script that reads straight after a write needs a retry.
 
-## Returning funds to Binance
-
-Binance completed USDC deposit support on Arc on 2026-09-16, and the return path is verified
-end to end with a live deposit rather than assumed.
-
-| | |
-| --- | --- |
-| Rehearsed | forked mainnet at block 22,344,656, status `0x1`, 21,000 gas, no revert |
-| Sent | 0.1 USDC from the deployer, [`0x321cc700…c7db`](https://explorer.arc.io/tx/0x321cc700ba67d61e8b3b4ad388a850808ae96239f52cb0a1e18ea17d9b17c7db), block 22,346,012 |
-| Gas | 21,000 at 20.1 Gwei = 0.0004221 USDC |
-| Credited | Binance Spot, network ARC, "Completed", 2026-09-23 13:17:36 UTC |
-
-What it establishes:
-
-- The deposit address is an EOA (no code), so Binance's "smart contract deposits are not
-  supported" caveat does not apply to a send from one of our wallets.
-- **Minimum deposit is `>0.000001 USDC`**, so the five wallets need no consolidation: each can
-  send directly.
-- Credited at 1 confirmation, which on Arc is immediate.
-- **Binance indexes the native transfer.** A plain wallet send is enough; no ERC-20 `transfer()`
-  against `0x3600…` is needed.
-
 ## Measured facts
 
 | Fact | Value | Source |
